@@ -1,5 +1,10 @@
 # Project: ujprog
 
+# dpkg --add-architecture i386
+# apt-get update
+# apt-get install gcc-mingw-w64
+# this uses the same ftd2xx.lib as used for linux (CDM v2.12.28 WHQL Certified\i386\ftd2xx.lib)
+
 CPP  = i686-w64-mingw32-gcc
 CC   = i686-w64-mingw32-gcc
 

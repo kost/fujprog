@@ -1,5 +1,8 @@
 # Project: ujprog
 
+# apt-get install mingw-w64)
+# Note this uses the 64bit ftd2xx.amd64.lib (CDM v2.12.28 WHQL Certified\amd64\ftd2xx.lib)
+
 CPP  = x86_64-w64-mingw32-gcc
 CC   = x86_64-w64-mingw32-gcc
 
