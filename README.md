@@ -3,24 +3,25 @@
 FPGA ULX2S / ULX3S JTAG programmer command line options:
 
 ```
-ULX2S / ULX3S JTAG programmer v 3.0.92  
+ULX2S / ULX3S JTAG programmer  v3.2 (built Apr  4 2020 18:41:07)
 Usage: fujprog [option(s)] [bitstream_file]
 
  Valid options:
-  -p PORT       Select USB JTAG / UART PORT (default is 0)
-  -P TTY        Select TTY port (valid only with -t or -a)
-  -j TARGET     Select bitstream TARGET as SRAM (default) or FLASH (XP2 only)
-  -f ADDR       Start writing to SPI flash at ADDR, optional with -j flash
-  -s FILE       Convert bitstream to SVF FILE and exit
-  -r            Reload FPGA configuration from internal Flash (XP2 only)
-  -t            Enter terminal emulation mode after completing JTAG operations
-  -b SPEED      Set baudrate to SPEED (300 to 3000000 bauds)
-  -e FILE       Send and execute a f32c (MIPS/RISCV) binary FILE
-  -x SPEED      Set binary transfer speed, optional with -e
-  -a FILE       Send a raw FILE
-  -d            debug (verbose)
-  -D DELAY      Delay transmission of each byte by DELAY ms
-  -q            Suppress messages
+  -p PORT	Select USB JTAG / UART PORT (default is 0)
+  -P TTY	Select TTY port (valid only with -t or -a)
+  -j TARGET	Select bitstream TARGET as SRAM (default) or FLASH
+  -f ADDR	Start writing to SPI flash at ADDR, optional with -j flash
+  -s FILE	Convert bitstream to SVF FILE and exit
+  -r		Reload FPGA configuration from FLASH
+  -t		Enter terminal emulation mode after completing JTAG operations
+  -b SPEED	Set baudrate to SPEED (300 to 3000000 bauds)
+  -e FILE	Send and execute a f32c (MIPS/RISCV) binary FILE
+  -x SPEED	Set binary transfer speed, optional with -e
+  -a FILE	Send a raw FILE
+  -d 		debug (verbose)
+  -D DELAY	Delay transmission of each byte by DELAY ms
+  -V 		display version and exit
+  -q 		Suppress messages
 ```
 
 # Building
