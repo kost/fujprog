@@ -43,6 +43,14 @@ cmake -DBUILD_STATIC=ON -DLIBFTDISTATIC=/opt/libftdi/lib/libftdi.a -DLIBUSB0STAT
 make install/strip
 ```
 
+### Linux requirements
+
+
+You need following packages in order to build on Debian/Ubuntu systems:
+```
+sudo apt-get install libftdi1-dev libusb-dev cmake make build-essential
+```
+
 ## MacOS X build
 
 You need to install following dependencies (tested with homebrew):
