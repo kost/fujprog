@@ -78,7 +78,7 @@ compiled with `i686-w64-mingw32-gcc` (installed with `apt-get install gcc-mingw-
 
 You may need to disable windows security block
 
-![windows security block](/ujprog/images/securityblock.png)
+![windows security block](/images/securityblock.png)
 
 
 ## MinGW (Windows 64 bit target exe; cross compiled from linux)
@@ -99,15 +99,15 @@ In order to use OpenOCD with the ULX3S, the `libusbK` dirvers are needed. One wa
 ## Change ULX3S Driver to libusbK using Zadig
 The ULX3S is using the FTDI drivers if it shows up in the Device Manager - Ports (COM & LPT)
 
-![ULX3S-as-FTDI-device](/ujprog/images/ULX3S-as-FTDI-device.PNG)
+![ULX3S-as-FTDI-device](/images/ULX3S-as-FTDI-device.PNG)
 
 Launch Zadig and click on `Options - List all Devices`.  Select the ULX3S device from the dropdown:
 
-![Zadig-FTDI-to-libusbK](/ujprog/images/Zadig-FTDI-to-libusbK.PNG)
+![Zadig-FTDI-to-libusbK](/images/Zadig-FTDI-to-libusbK.PNG)
 
 Press the Replace Driver button and after a few moments you should see a message that the drivers were installed successfully:
 
-![Zadig-success](/ujprog/images/Zadig-success.PNG)
+![Zadig-success](/images/Zadig-success.PNG)
 
 The driver change typically works immediately and no reboot is needed.
 
