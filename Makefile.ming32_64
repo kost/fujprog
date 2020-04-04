@@ -1,0 +1,41 @@
+# Project: ujprog
+
+CPP  = x86_64-w64-mingw32-gcc
+CC   = x86_64-w64-mingw32-gcc
+
+FTDI_ZIP_URL = "https://www.ftdichip.com/Drivers/CDM/CDM%20v2.12.28%20WHQL%20Certified.zip"
+FTDI_ZIP_FILE = ftdi.zip
+FTDI_LIB_UNZIPPED = amd64/ftd2xx
+
+WINDRES = windres.exe
+RES  = 
+OBJ  = ujprog.o $(RES)
+LINKOBJ  = ujprog.o $(RES)
+LIBS = -s -static -L. -l$(FTDI_LIB_UNZIPPED)
+INCS = -I.
+CXXINCS = -I.
+BIN  = ujprog.exe
+CXXFLAGS = $(CXXINCS) -wAll
+CFLAGS = $(INCS)
+RM = rm -f
+
+.PHONY: all all-before all-after clean clean-custom
+
+all: all-before ujprog.exe all-after
+
+
+clean: clean-custom
+	${RM} $(OBJ) $(BIN) $(FTDI_LIB_UNZIPPED).lib $(FTDI_ZIP_FILE)
+
+$(FTDI_ZIP_FILE):
+	wget -c $(FTDI_ZIP_URL) -O ftdi.zip
+
+$(FTDI_LIB_UNZIPPED).lib: $(FTDI_ZIP_FILE)
+	unzip $< $@
+	touch $@
+
+$(BIN): $(OBJ) $(FTDI_LIB_UNZIPPED).lib
+	$(CC) $(LINKOBJ) -o "ujprog.exe" $(LIBS)
+
+ujprog.o: ujprog.c
+	$(CC) -c ujprog.c -o ujprog.o $(CFLAGS)
