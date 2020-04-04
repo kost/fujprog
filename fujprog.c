@@ -53,7 +53,7 @@ static const char *verstr = "ULX2S / ULX3S JTAG programmer ";
 #include <string.h>
 #include <unistd.h>
 
-#include "ujprog.h"
+#include "fujprog.h"
 
 #ifdef __FreeBSD__
 #define USE_PPI
@@ -2676,7 +2676,7 @@ terminal_help(void)
 		"the FPGA\n"
 	    "  ~#	send a BREAK signal\n"
 	    "  ~d	enter f32c debugger\n"
-	    "  ~.	exit from ujprog\n"
+	    "  ~.	exit from fujprog\n"
 	    "  ~?	get this summary\n"
 	);
 }
@@ -2686,7 +2686,7 @@ static void
 usage(void)
 {
 
-	printf("Usage: ujprog [option(s)] [bitstream_file]\n\n");
+	printf("Usage: fujprog [option(s)] [bitstream_file]\n\n");
 
 	printf(" Valid options:\n");
 #ifdef USE_PPI
@@ -4189,7 +4189,7 @@ main(int argc, char *argv[])
 #endif
 
 	if (!quiet)
-		printf("%s v%d.%d (built %s %s)\n", verstr, UJPROG_VERSION_MAJOR, UJPROG_VERSION_MINOR, __DATE__, __TIME__);
+		printf("%s v%d.%d (built %s %s)\n", verstr, FUJPROG_VERSION_MAJOR, FUJPROG_VERSION_MINOR, __DATE__, __TIME__);
 
 	if (svf_name) {
 		if (terminal || reload || txfname || com_name || argc == 0) {

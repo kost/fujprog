@@ -1,7 +1,7 @@
 cmake_minimum_required(VERSION 3.10)
 
 # set the project name and version
-project(ujprog VERSION 3.2)
+project(fujprog VERSION 3.2)
 
 # control where the static and shared libraries are built so that on windows
 # we don't need to tinker with the path to run the executable
@@ -34,26 +34,26 @@ find_package(LibFTDI1 CONFIG REQUIRED)
 link_directories(/usr/local/lib)
 
 # configure a header file to pass the version number only
-configure_file(ujprog.h.in ujprog.h)
+configure_file(fujprog.h.in fujprog.h)
 include_directories(${CMAKE_CURRENT_BINARY_DIR})
 
 # add the executable
-add_executable(ujprog ujprog.c)
-target_include_directories(ujprog PRIVATE ${LIBFTDI_INCLUDE_DIR})
+add_executable(fujprog fujprog.c)
+target_include_directories(fujprog PRIVATE ${LIBFTDI_INCLUDE_DIR})
 if (BUILD_STATICLIB)
 	set(CMAKE_FIND_LIBRARY_SUFFIXES ".a")
 	# set(CMAKE_EXE_LINKER_FLAGS "${CMAKE_EXE_LINKER_FLAGS} -static-libgcc")
-	set_target_properties(ujprog PROPERTIES LINK_SEARCH_START_STATIC 1)
-	set_target_properties(ujprog PROPERTIES LINK_SEARCH_END_STATIC 1)
-	target_link_libraries(ujprog PUBLIC ${LIBFTDISTATIC} ${LIBUSB0STATIC})
+	set_target_properties(fujprog PROPERTIES LINK_SEARCH_START_STATIC 1)
+	set_target_properties(fujprog PROPERTIES LINK_SEARCH_END_STATIC 1)
+	target_link_libraries(fujprog PUBLIC ${LIBFTDISTATIC} ${LIBUSB0STATIC})
 else()
 	if (BUILD_STATIC)
-		target_link_libraries(ujprog PUBLIC ${LIBFTDISTATIC} ${LIBUSB0STATIC})
+		target_link_libraries(fujprog PUBLIC ${LIBFTDISTATIC} ${LIBUSB0STATIC})
 	else()
-		target_link_libraries(ujprog PUBLIC ${LIBFTDI_LIBRARY} usb)
+		target_link_libraries(fujprog PUBLIC ${LIBFTDI_LIBRARY} usb)
 	endif()
 endif()
 
 # install
-install(TARGETS ujprog DESTINATION bin)
+install(TARGETS fujprog DESTINATION bin)
 
