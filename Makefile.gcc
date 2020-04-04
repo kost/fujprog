@@ -1,0 +1,27 @@
+SRCS = ujprog.c
+CFLAGS += -Wall -D__linux__ -std=gnu99 -static
+
+# for linux on PC (i386/amd64)
+ARCHNAME = $(shell uname -m)-linux-gnu
+# for linux on raspberrypi-3
+# ARCHNAME = arm-linux-gnueabihf
+
+# /usr/lib/libftdi1.a
+#FTLIB = /usr/lib/libftdi1.a
+FTLIB = -lftdi
+USBLIB = -lusb 
+
+ujprog:	${SRCS}
+	${CC} ${CFLAGS} ${SRCS} ${FTLIB} ${USBLIB} -o ujprog
+
+flash:	ft232r_flash.c
+	${CC} ${CFLAGS} -lusb ft232r_flash.c ${FTLIB} -o ft232r_flash
+	
+install: ujprog
+	install -m 4755 ujprog /usr/local/bin
+
+clean:
+	rm -f ujprog ujprog.o *~
+
+depend:
+	mkdep ${INCLUDES} ${SRCS}
