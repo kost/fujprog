@@ -1,7 +1,7 @@
 cmake_minimum_required(VERSION 3.10)
 
 # set the project name and version
-project(ujprog VERSION 1.0)
+project(ujprog VERSION 3.2)
 
 # control where the static and shared libraries are built so that on windows
 # we don't need to tinker with the path to run the executable
@@ -35,6 +35,7 @@ link_directories(/usr/local/lib)
 
 # configure a header file to pass the version number only
 configure_file(ujprog.h.in ujprog.h)
+include_directories(${CMAKE_CURRENT_BINARY_DIR})
 
 # add the executable
 add_executable(ujprog ujprog.c)

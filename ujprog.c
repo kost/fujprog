@@ -41,7 +41,7 @@
  * - execute SVF commands provided as command line args?
  */
 
-static const char *verstr = "ULX2S / ULX3S JTAG programmer v 3.0.92";
+static const char *verstr = "ULX2S / ULX3S JTAG programmer ";
 
 
 #include <ctype.h>
@@ -52,6 +52,8 @@ static const char *verstr = "ULX2S / ULX3S JTAG programmer v 3.0.92";
 #include <stdlib.h>
 #include <string.h>
 #include <unistd.h>
+
+#include "ujprog.h"
 
 #ifdef __FreeBSD__
 #define USE_PPI
@@ -4187,7 +4189,7 @@ main(int argc, char *argv[])
 #endif
 
 	if (!quiet)
-		printf("%s (built %s %s)\n", verstr, __DATE__, __TIME__);
+		printf("%s v%d.%d (built %s %s)\n", verstr, UJPROG_VERSION_MAJOR, UJPROG_VERSION_MINOR, __DATE__, __TIME__);
 
 	if (svf_name) {
 		if (terminal || reload || txfname || com_name || argc == 0) {
