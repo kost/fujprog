@@ -26,15 +26,21 @@ Usage: fujprog [option(s)] [bitstream_file]
 # Building
 
 It is standard CMake procedure:
-    # mkdir build
-    # cmake ..
-    # make
-    # make install
+
+```
+mkdir build
+cd build
+cmake ..
+make
+make install
+```
 
 You can also pass optional parameters:
 
-    # cmake -DBUILD_STATIC=ON -DLIBFTDISTATIC=/opt/libftdi/lib/libftdi.a -DLIBUSB0STATIC=/opt/libusb0/lib/libusb.a ..
-    # make install/strip
+```
+cmake -DBUILD_STATIC=ON -DLIBFTDISTATIC=/opt/libftdi/lib/libftdi.a -DLIBUSB0STATIC=/opt/libusb0/lib/libusb.a ..
+make install/strip
+```
 
 ## MacOS X build
 
