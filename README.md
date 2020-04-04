@@ -117,15 +117,15 @@ The FTDI drivers should already be installed. If so, Windows will automatically 
 
 The ULX3S is using the libusbK drivers if it shows up in Device Manager - libusbK USB Devices. (typically when using OpenOCD)
 
-![ULX3S-as-libusbK-device](/ujprog/images/ULX3S-as-libusbK-device.PNG)
+![ULX3S-as-libusbK-device](/images/ULX3S-as-libusbK-device.PNG)
 
 To remove the libusbK drivers, right click on your ULX3S device in Device Manager and select `Uninstall Device`:
 
-![Uninstall-libusbK-device](/ujprog/images/Uninstall-libusbK-device.PNG)
+![Uninstall-libusbK-device](/images/Uninstall-libusbK-device.PNG)
 
 Then click the Uninstall button (don't check the box unless you want to actually uninstall the drivers from Windows and then reinstall the drivers later; we are only uninstalling the device):
 
-![Uninstall-libusbK-device-step2](/ujprog/images/Uninstall-libusbK-device-step2.PNG)
+![Uninstall-libusbK-device-step2](/images/Uninstall-libusbK-device-step2.PNG)
 
 After clicking the Uninstall button, `Device Manager` may flicker a bit, but no message is typically shown. If the device was removed it will no longer be visible. If there are no other libusbK devices, then then entire `libusbK USB Devices` container will also be gone.
 
