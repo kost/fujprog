@@ -2716,6 +2716,7 @@ usage(void)
 	printf("  -d 		debug (verbose)\n");
 	printf("  -D DELAY	Delay transmission of each byte by"
 	    " DELAY ms\n");
+	printf("  -V 		display version and exit\n");
 	printf("  -q 		Suppress messages\n");
 
 	if (terminal) {
@@ -4086,9 +4087,9 @@ main(int argc, char *argv[])
 #endif
 
 #ifndef USE_PPI
-#define OPTS	"qtdj:b:p:x:p:P:a:e:f:D:rs:"
+#define OPTS	"Vqtdj:b:p:x:p:P:a:e:f:D:rs:"
 #else
-#define OPTS	"qtdj:b:p:x:p:P:a:e:f:D:rs:c:"
+#define OPTS	"Vqtdj:b:p:x:p:P:a:e:f:D:rs:c:"
 #endif
 	while ((c = getopt(argc, argv, OPTS)) != -1) {
 		switch (c) {
@@ -4172,6 +4173,9 @@ main(int argc, char *argv[])
 			had_terminal = 1;
 #endif
 			break;
+		case 'V':
+			printf("%s v%d.%d (built %s %s)\n", verstr, FUJPROG_VERSION_MAJOR, FUJPROG_VERSION_MINOR, __DATE__, __TIME__);
+			exit(0);
 		case '?':
 		default:
 			usage();
