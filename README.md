@@ -1,8 +1,10 @@
-# ULX2S / ULX3S JTAG programmer usage:
+# ULX2S / ULX3S JTAG programmer usage
+
+FPGA ULX2S / ULX3S JTAG programmer command line options:
 
 ```
 ULX2S / ULX3S JTAG programmer v 3.0.92  
-Usage: ujprog [option(s)] [bitstream_file]
+Usage: fujprog [option(s)] [bitstream_file]
 
  Valid options:
   -p PORT       Select USB JTAG / UART PORT (default is 0)
@@ -21,46 +23,52 @@ Usage: ujprog [option(s)] [bitstream_file]
   -q            Suppress messages
 ```
 
-# Compiling
+# Building
 
-Unless regularly compiling for different targets, consider copying or
-symlinking the respective `Makefile.[target]` to your `Makefile` and
-use just "make" to compile, for example
+It is standard CMake procedure:
+    # mkdir build
+    # cmake ..
+    # make
+    # make install
 
-`ln -s Makefile.linux Makefile`
+You can also pass optional parameters:
 
-`make`
+    # cmake -DBUILD_STATIC=ON -DLIBFTDISTATIC=/opt/libftdi/lib/libftdi.a -DLIBUSB0STATIC=/opt/libusb0/lib/libusb.a ..
+    # make install/strip
 
+## MacOS X build
 
-## BSD
+You need to install following dependencies (tested with homebrew):
+```
+brew install libftdi libftdi0
+```
 
-`make -f Makefile.bsd`
+And then it is standard build with -DSTATICLIB=on:
 
+```
+mkdir build
+cd build
+cmake -DBUILD_STATICLIB=ON ..
+make
+make install/strip
+```
 
-## Linux PC (i386/amd64)
-Native linux Debian/Ubuntu, maybe many others too,
-including WSL Ubuntu, but reminder there's no WSL support for USB devices, only tty!
+Note that full static binary is not supported by Apple.
 
-`make -f Makefile.linux`
+## Windows cross-compile
 
+You need to download ftdi dependency lib:
+```
+wget https://www.ftdichip.com/Drivers/CDM/CDM%20v2.12.28%20WHQL%20Certified.zip
+```
 
-## Linux RaspberryPI-3 (armhf)
-
-Edit Makefile.linux and enable this:
-`ARCHNAME = arm-linux-gnueabihf`
-
-`make -f Makefile.linux`
-
-
-## OSX
-
-`make -f Makefile.osx`
-
-
-## Windows
-
-`make -f Makefile.win`
-
+Cross compiling is done using standard cmake toolchain file:
+```
+mkdir build
+cd build
+cmake -DCMAKE_TOOLCHAIN_FILE=`pwd`/../cmake/Toolchain-cross-mingw32.cmake ..
+make
+```
 
 ## MinGW (Windows 32 bit target exe; cross compiled from linux)
 
@@ -92,9 +100,9 @@ Note this uses the 64bit `ftd2xx.amd64.lib` (`CDM v2.12.28 WHQL Certified\amd64\
 
 # NOTE on Windows Drivers
 
-The JTAG features of this ujprog cannot be used concurrently with OpenOCD.
+The JTAG features of this fujprog cannot be used concurrently with OpenOCD.
 
-In order to use OpenOCD with the ULX3S, the `libusbK` dirvers are needed. One way of manually changing the drivers is to use [Zadig](https://zadig.akeo.ie/). The problem with using the `libusbK` drivers is that this ujprog will no longer work, as it needs the FTDI drivers.
+In order to use OpenOCD with the ULX3S, the `libusbK` dirvers are needed. One way of manually changing the drivers is to use [Zadig](https://zadig.akeo.ie/). The problem with using the `libusbK` drivers is that this fujprog will no longer work, as it needs the FTDI drivers.
 
 ## Change ULX3S Driver to libusbK using Zadig
 The ULX3S is using the FTDI drivers if it shows up in the Device Manager - Ports (COM & LPT)
@@ -136,27 +144,27 @@ To complete the process of installing the FDTI drivers: Unplug the ULX3S, wait 3
 *** WINDOWS ***
 
 Most issues come from windows platform. In some cases
-ujprog doesn't work. Sometimes it is just a matter of dynamic
+fujprog doesn't work. Sometimes it is just a matter of dynamic
 linking (DLL file "ftd2xx.dll" or "ftd2xx64.dll", easiest is
 just to copy this file from FTDI D2XX CDM driver to the same
-directory where ujprog.exe is)
+directory where fujprog.exe is)
 
-On VoIFS there is strange problem related with ujprog.exe
-compiled with mingw. ujprog.exe, if started from "wrong" directory
-doesn't work. When started from "wrong" directory, ujprog.exe
+On VoIFS there is strange problem related with fujprog.exe
+compiled with mingw. fujprog.exe, if started from "wrong" directory
+doesn't work. When started from "wrong" directory, fujprog.exe
 will exit without printing any error or any other message while
 it should print help/usage message shown on top of this page.
 Possible cause of this problem is that "ftd2xx64.dll" (for win64)
 is found copied to System32 directory under name "ftd2xx.dll" (for win32).
 
 Possible solution would be to remove all ftd2xx copies and copy
-ujprog.exe and dll to another directory and try again.
+fujprog.exe and dll to another directory and try again.
 
 *** LINUX ***
 
-Here we have much better success, ujprog is statically linked and
+Here we have much better success, fujprog is statically linked and
 doesn't depend on any other file. Most issues come from user permissions
-so ujprog should be either run as root or the user should be given
+so fujprog should be either run as root or the user should be given
 permissions to access USB and serial device, that's usually done
 easily with some udev rule:
 
@@ -164,14 +172,14 @@ easily with some udev rule:
     # this is for usb-serial tty device
     SUBSYSTEM=="tty", ATTRS{idVendor}=="0403", ATTRS{idProduct}=="6015", \
       MODE="664", GROUP="dialout"
-    # this is for ujprog libusb access
+    # this is for fujprog libusb access
     ATTRS{idVendor}=="0403", ATTRS{idProduct}=="6015", \
       GROUP="dialout", MODE="666"
 
 *** APPLE ***
 
 There can be many problems, I don't know what to do
-one of the issues is that ujprog executable may needs
+one of the issues is that fujprog executable may needs
 some dynamic linked library of specific version like libusb
 
 
@@ -193,16 +201,4 @@ library required to link i386/amd64 exe.
 tested.
 
 
-*** CMake ***
-
-It is standard CMake procedure:
-    # mkdir build
-    # cmake ..
-    # make
-    # make install
-
-You can also pass optional parameters:
-
-    # cmake -DBUILD_STATIC=ON -DLIBFTDISTATIC=/opt/libftdi/lib/libftdi.a -DLIBUSB0STATIC=/opt/libusb0/lib/libusb.a ..
-    # make install/strip
 
