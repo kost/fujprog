@@ -201,6 +201,8 @@ Fujprog is based on ujprog originally authored by Marko Zec.
 Contributions from EMARD, gojimmypi and kost.
 
 Copyright (C), 2008-2018 Marko Zec, University of Zagreb
+
 Copyright (c) 2014-2019 EMARD
+
 Copyright (c) 2020, kost
 
