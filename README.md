@@ -156,7 +156,7 @@ To complete the process of installing the FDTI drivers: Unplug the ULX3S, wait 3
 
 # Troubleshooting
 
-*** WINDOWS ***
+##  WINDOWS
 
 Most issues come from windows platform. In some cases
 fujprog doesn't work. Sometimes it is just a matter of dynamic
@@ -175,7 +175,7 @@ is found copied to System32 directory under name "ftd2xx.dll" (for win32).
 Possible solution would be to remove all ftd2xx copies and copy
 fujprog.exe and dll to another directory and try again.
 
-*** LINUX ***
+## LINUX
 
 Here we have much better success, fujprog is statically linked and
 doesn't depend on any other file. Most issues come from user permissions
@@ -191,29 +191,16 @@ easily with some udev rule:
     ATTRS{idVendor}=="0403", ATTRS{idProduct}=="6015", \
       GROUP="dialout", MODE="666"
 
-*** APPLE ***
+## APPLE
 
-There can be many problems, I don't know what to do
-one of the issues is that fujprog executable may needs
-some dynamic linked library of specific version like libusb
+Feel free to report any problems. If you have problems running released binary try to compile your own version.
 
+# Credits
 
-# Changes by gojimmypi Feb 13 2019:
+Fujprog is based on ujprog originally authored by Marko Zec.
+Contributions from EMARD, gojimmypi and kost.
 
-Added this README.md
-
-Microsoft dumpbin reports 51E00677 time/date Fri Jul 12 06:36:55 2013 for current repo `ftd2xx.lib` 
-
-The most recent `ftd2xx.lib` in 2.12.28 is 599AE440 time/date Mon Aug 21 06:46:40 2017
-
-See https://www.ftdichip.com/Drivers/CDM/CDM%20v2.12.28%20WHQL%20Certified.zip on https://www.ftdichip.com/Drivers/D2XX.htm
-
-`Makefile.ming32` and `Makefile.ming32_64` have a rule to
-automatically download (`CDM v2.12.28 WHQL Certified.zip`) and unzip
-library required to link i386/amd64 exe.
-
-`Makefile.ming32` compiles with `i686-w64-mingw32-gcc` but it's not yet
-tested.
-
-
+Copyright (C), 2008-2018 Marko Zec, University of Zagreb
+Copyright (c) 2014-2019 EMARD
+Copyright (c) 2020, kost
 
