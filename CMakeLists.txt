@@ -36,10 +36,20 @@ configure_file(fujprog.h.in fujprog.h)
 include_directories(${CMAKE_CURRENT_BINARY_DIR})
 
 # add the executable
-add_executable(fujprog fujprog.c)
+if (MSVC)
+	add_executable(fujprog fujprog.c getopt.c)
+	add_compile_options(
+        $<$<CONFIG:>:/MT> #---------|
+        $<$<CONFIG:Debug>:/MTd> #---|-- Statically link the runtime libraries
+        $<$<CONFIG:Release>:/MT> #--|
+    )
+else()
+	add_executable(fujprog fujprog.c)
+endif()
 
 if (${CMAKE_SYSTEM_NAME} MATCHES "Windows")
 #if (WIN32)
+	add_definitions(-DFTD2XX_STATIC=1)
 	set(CMAKE_EXE_LINKER_FLAGS "${CMAKE_EXE_LINKER_FLAGS} -static")
 	find_library(LIBFTDISTATIC ftd2xx.lib PATHS ${CMAKE_CURRENT_SOURCE_DIR} REQUIRED)
 	include_directories(${CMAKE_CURRENT_SOURCE_DIR})
