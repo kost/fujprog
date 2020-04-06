@@ -786,7 +786,10 @@ setup_usb(void)
 		    " -bundle-id com.FTDI.driver.FTDIUSBSerialDriver");
 		system("/sbin/kextunload"
 		    " -bundle-id com.apple.driver.AppleUSBFTDI");
+	} else {
+		fprintf(stderr, "no root permissions, not handling kexts\n");
 	}
+
 #endif
 
 	res = ftdi_init(&fc);
