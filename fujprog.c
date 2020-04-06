@@ -882,10 +882,13 @@ shutdown_usb(void)
 	ftdi_deinit(&fc);
 
 #ifdef __APPLE__
-	system("/sbin/kextload"
-	    " -bundle-id com.FTDI.driver.FTDIUSBSerialDriver");
-	system("/sbin/kextload"
-	    "  -bundle-id com.apple.driver.AppleUSBFTDI");
+	uid_t uid=getuid(), euid=geteuid();
+	if (uid<0 || uid!=euid) {
+		system("/sbin/kextload"
+		    " -bundle-id com.FTDI.driver.FTDIUSBSerialDriver");
+		system("/sbin/kextload"
+		    "  -bundle-id com.apple.driver.AppleUSBFTDI");
+	}
 #endif
 
 	return (0);
