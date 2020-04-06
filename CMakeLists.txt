@@ -61,7 +61,11 @@ else()
 	find_package(LibFTDI1 CONFIG REQUIRED)
 endif()
 
-target_include_directories(fujprog PRIVATE ${LIBFTDI_INCLUDE_DIR})
+if (LIBFTDI_INCLUDE)
+	target_include_directories(fujprog PRIVATE ${LIBFTDI_INCLUDE})
+else()
+	target_include_directories(fujprog PRIVATE ${LIBFTDI_INCLUDE_DIR})
+endif()
 
 if (${CMAKE_SYSTEM_NAME} MATCHES "Windows")
 	link_directories(${PROJECT_SOURCE_DIR})
