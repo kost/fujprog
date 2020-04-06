@@ -85,41 +85,20 @@ cmake -DCMAKE_TOOLCHAIN_FILE=`pwd`/../cmake/Toolchain-cross-mingw32.cmake ..
 make
 ```
 
-## MinGW (Windows 32 bit target exe; cross compiled from linux)
-
-To get 32-bit environment on debian while running on 64-bit linux
-it might be useful to enable multiarch
-(but I'm not sure if this is really necessary)
-
-`dpkg --add-architecture i386`
-
-`apt-get update`
-
-compiled with `i686-w64-mingw32-gcc` (installed with `apt-get install gcc-mingw-w64`); this uses the same `ftd2xx.lib` as used for linux (CDM v2.12.28 WHQL Certified\i386\ftd2xx.lib)
-
-`make -f Makefile.ming32`
+# Windows Notes
 
 You may need to disable windows security block
 
 ![windows security block](/images/securityblock.png)
 
-
-## MinGW (Windows 64 bit target exe; cross compiled from linux)
-
-compiled with `x86_64-w64-mingw32-gcc` (installed with `sudo apt-get install mingw-w64`)
-
-Note this uses the 64bit `ftd2xx.amd64.lib` (`CDM v2.12.28 WHQL Certified\amd64\ftd2xx.lib`)
-
-`make -f Makefile.ming32_64`
-
-
-# NOTE on Windows Drivers
+## Windows Drivers
 
 The JTAG features of this fujprog cannot be used concurrently with OpenOCD.
 
 In order to use OpenOCD with the ULX3S, the `libusbK` dirvers are needed. One way of manually changing the drivers is to use [Zadig](https://zadig.akeo.ie/). The problem with using the `libusbK` drivers is that this fujprog will no longer work, as it needs the FTDI drivers.
 
 ## Change ULX3S Driver to libusbK using Zadig
+
 The ULX3S is using the FTDI drivers if it shows up in the Device Manager - Ports (COM & LPT)
 
 ![ULX3S-as-FTDI-device](/images/ULX3S-as-FTDI-device.PNG)
