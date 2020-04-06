@@ -13,77 +13,82 @@ option(BUILD_STATIC "Build completely static binary" OFF)
 option(BUILD_STATICLIB "Build binary with non default static binaries" OFF)
 
 if (BUILD_STATIC)
-	set(CMAKE_EXE_LINKER_FLAGS "${CMAKE_EXE_LINKER_FLAGS} -static")
-	set(CMAKE_FIND_LIBRARY_SUFFIXES ".a")
-	find_library(LIBFTDISTATIC libftdi.a REQUIRED)
-	find_library(LIBUSB0STATIC libusb.a REQUIRED)
+	 set(CMAKE_EXE_LINKER_FLAGS "-static")
+	 set(BUILD_SHARED_LIBS OFF)
 endif()
+
 if (BUILD_STATICLIB)
-	if (${CMAKE_SYSTEM_NAME} MATCHES "Darwin")
-		set(CMAKE_EXE_LINKER_FLAGS "${CMAKE_EXE_LINKER_FLAGS} -framework CoreFoundation -framework IOKit")
-		find_library(LIBFTDISTATIC libftdi1.a REQUIRED)
-		find_library(LIBUSB0STATIC libusb-1.0.a REQUIRED)
-	else()
-		find_library(LIBFTDISTATIC libftdi.a REQUIRED)
-		find_library(LIBUSB0STATIC libusb.a REQUIRED)
-	endif()
-	# set(CMAKE_EXE_LINKER_FLAGS "${CMAKE_EXE_LINKER_FLAGS} -static-libgcc")
+	find_library(LIBFTDISTATIC libftdi1.a REQUIRED)
+	find_library(LIBUSBSTATIC libusb-1.0.a REQUIRED)
+endif()
+
+if (${CMAKE_SYSTEM_NAME} MATCHES "Darwin")
+	set(CMAKE_EXE_LINKER_FLAGS "${CMAKE_EXE_LINKER_FLAGS} -framework CoreFoundation -framework IOKit")
 endif()
 
 
-# configure a header file to pass the version number only
-configure_file(fujprog.h.in fujprog.h)
-include_directories(${CMAKE_CURRENT_BINARY_DIR})
 
-# add the executable
+set(FUJPROG_HEADERS
+	fujprog.h
+)
+
+set(FUJPROG_SOURCE
+	fujprog.c
+)
+
 if (MSVC)
-	add_executable(fujprog fujprog.c getopt.c)
+	set(FUJPROG_SOURCE "${FUJPROG_SOURCE}" "getopt.c")
 	add_compile_options(
-        $<$<CONFIG:>:/MT> #---------|
-        $<$<CONFIG:Debug>:/MTd> #---|-- Statically link the runtime libraries
-        $<$<CONFIG:Release>:/MT> #--|
-    )
+	$<$<CONFIG:>:/MT> #---------|
+	$<$<CONFIG:Debug>:/MTd> #---|-- Statically link the runtime libraries
+	$<$<CONFIG:Release>:/MT> #--|
+	)
 else()
-	add_executable(fujprog fujprog.c)
+	find_package(PkgConfig REQUIRED)
+	pkg_check_modules(LIBFTDI REQUIRED libftdi1)
+	pkg_check_modules(LIBUSB REQUIRED libusb-1.0)
+	link_directories(${LIBUSB_LIBRARY_DIRS} ${LIBFTDI_LIBRARY_DIRS})
 endif()
 
-if (${CMAKE_SYSTEM_NAME} MATCHES "Windows")
-#if (WIN32)
+
+add_executable(fujprog
+	${FUJPROG_SOURCE}
+	${FUJPROG_HEADERS}
+)
+
+if (WIN32)
+	link_directories(${PROJECT_SOURCE_DIR})
 	add_definitions(-DFTD2XX_STATIC=1)
 	set(CMAKE_EXE_LINKER_FLAGS "${CMAKE_EXE_LINKER_FLAGS} -static")
 	find_library(LIBFTDISTATIC ftd2xx.lib PATHS ${CMAKE_CURRENT_SOURCE_DIR} REQUIRED)
 	include_directories(${CMAKE_CURRENT_SOURCE_DIR})
 	target_link_libraries(fujprog PUBLIC ${LIBFTDISTATIC})
-	#link_directories(${CMAKE_CURRENT_SOURCE_DIR}/i386 ${CMAKE_CURRENT_SOURCE_DIR}/amd64)
-	# link_directories(i386/ amd64/)
-	#link_directories(i386 amd64)
 else()
-	find_package(LibFTDI1 CONFIG REQUIRED)
+if (BUILD_STATICLIB)
+	set(CMAKE_FIND_LIBRARY_SUFFIXES ".a")
+	set_target_properties(fujprog PROPERTIES LINK_SEARCH_START_STATIC 1)
+	set_target_properties(fujprog PROPERTIES LINK_SEARCH_END_STATIC 1)
+	target_link_libraries(fujprog PUBLIC ${LIBFTDISTATIC} ${LIBUSBSTATIC})
+else()
+	target_link_libraries(fujprog
+		${LIBUSB_LIBRARIES}
+		${LIBFTDI_LIBRARIES}
+	)
+endif()
 endif()
 
-if (LIBFTDI_INCLUDE)
-	target_include_directories(fujprog PRIVATE ${LIBFTDI_INCLUDE})
-else()
-	target_include_directories(fujprog PRIVATE ${LIBFTDI_INCLUDE_DIR})
-endif()
+# configure a header file to pass the version number only
+configure_file(fujprog.h.in fujprog.h)
 
-if (${CMAKE_SYSTEM_NAME} MATCHES "Windows")
-	link_directories(${PROJECT_SOURCE_DIR})
-else()
-	if (BUILD_STATICLIB)
-		set(CMAKE_FIND_LIBRARY_SUFFIXES ".a")
-		# set(CMAKE_EXE_LINKER_FLAGS "${CMAKE_EXE_LINKER_FLAGS} -static-libgcc")
-		set_target_properties(fujprog PROPERTIES LINK_SEARCH_START_STATIC 1)
-		set_target_properties(fujprog PROPERTIES LINK_SEARCH_END_STATIC 1)
-		target_link_libraries(fujprog PUBLIC ${LIBFTDISTATIC} ${LIBUSB0STATIC})
-	else()
-		if (BUILD_STATIC)
-			target_link_libraries(fujprog PUBLIC ${LIBFTDISTATIC} ${LIBUSB0STATIC})
-		else()
-			target_link_libraries(fujprog PUBLIC ${LIBFTDI_LIBRARY} usb)
-		endif()
-	endif()
-	link_directories(/usr/local/lib)
+include_directories(
+	${LIBUSB_INCLUDE_DIRS}
+	${LIBFTDI_INCLUDE_DIRS}
+	${CMAKE_CURRENT_BINARY_DIR}
+)
+
+
+if (BUILD_STATIC)
+	 set_target_properties(fujprog PROPERTIES LINK_SEARCH_END_STATIC 1)
 endif()
 
 # install

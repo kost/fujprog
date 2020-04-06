@@ -42,6 +42,7 @@
  */
 
 static const char *verstr = "ULX2S / ULX3S JTAG programmer ";
+static const char *credstr = "Copyright (C) Marko Zec, EMARD, gojimmypi, kost and contributors";
 
 
 #include <ctype.h>
@@ -82,7 +83,7 @@ void usleep(__int64 usec)
 #endif
 
 #if defined(__linux__)
-#include <usb.h>
+#include <libusb.h>
 #endif
 
 #if defined(__linux__) || defined(WIN32)
@@ -869,15 +870,26 @@ shutdown_usb(void)
 	}
 
 #ifdef __linux__
-	usb_reset((void *) fc.usb_dev);
-#else
+	 if (fc.usb_dev != NULL) {
+		res = libusb_release_interface(fc.usb_dev, fc.interface);
+		if (res < 0) {
+			fprintf(stderr, "release interface failed %d\n", res);
+			return EXIT_FAILURE;
+		}
+		/* libusb_attach_kernel_driver is only available on Linux. */
+		if (fc.module_detach_mode == AUTO_DETACH_SIO_MODULE) {
+			res = libusb_attach_kernel_driver(fc.usb_dev, fc.interface);
+			if( res != 0)
+				fprintf(stderr, "detach error %d\n", res);
+		}
+	}
+#endif
 	res = ftdi_usb_close(&fc);
 	if (res < 0) {
 		fprintf(stderr, "unable to close ftdi device: %d (%s)\n",
 		    res, ftdi_get_error_string(&fc));
 		return (res);
 	}
-#endif
 
 	ftdi_deinit(&fc);
 
@@ -4225,8 +4237,10 @@ main(int argc, char *argv[])
 	}
 #endif
 
-	if (!quiet)
+	if (!quiet) {
 		printf("%s v%d.%d (built %s %s)\n", verstr, FUJPROG_VERSION_MAJOR, FUJPROG_VERSION_MINOR, __DATE__, __TIME__);
+		printf("%s\n", credstr);
+	}
 
 	if (svf_name) {
 		if (terminal || reload || txfname || com_name || argc == 0) {
