@@ -779,11 +779,14 @@ setup_usb(void)
 	int res;
 
 #ifdef __APPLE__
-	setuid(0);
-	system("/sbin/kextunload"
-	    " -bundle-id com.FTDI.driver.FTDIUSBSerialDriver");
-	system("/sbin/kextunload"
-	    " -bundle-id com.apple.driver.AppleUSBFTDI");
+	uid_t uid=getuid(), euid=geteuid();
+	if (uid<0 || uid!=euid) {
+		setuid(0);
+		system("/sbin/kextunload"
+		    " -bundle-id com.FTDI.driver.FTDIUSBSerialDriver");
+		system("/sbin/kextunload"
+		    " -bundle-id com.apple.driver.AppleUSBFTDI");
+	}
 #endif
 
 	res = ftdi_init(&fc);
@@ -803,10 +806,12 @@ setup_usb(void)
 		    NULL, NULL, port_index);
 		if (res < 0) {
 #ifdef __APPLE__
-			system("/sbin/kextload"
-			    " -bundle-id com.FTDI.driver.FTDIUSBSerialDriver");
-			system("/sbin/kextload"
-			    "  -bundle-id com.apple.driver.AppleUSBFTDI");
+			if (uid<0 || uid!=euid) {
+				system("/sbin/kextload"
+				    " -bundle-id com.FTDI.driver.FTDIUSBSerialDriver");
+				system("/sbin/kextload"
+				    "  -bundle-id com.apple.driver.AppleUSBFTDI");
+			}
 #endif
 			return (res);
 		}
