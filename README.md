@@ -70,6 +70,15 @@ make install/strip
 
 Note that full static binary is not supported by Apple.
 
+## Windows build
+
+You need to download ftdi dependency lib:
+```
+wget https://www.ftdichip.com/Drivers/CDM/CDM%20v2.12.28%20WHQL%20Certified.zip
+```
+
+Then you can just open folder inside Visual Studio and build Release versions.
+
 ## Windows cross-compile
 
 You need to download ftdi dependency lib:
