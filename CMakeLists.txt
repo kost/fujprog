@@ -1,7 +1,7 @@
 cmake_minimum_required(VERSION 3.10)
 
 # set the project name and version
-project(fujprog VERSION 3.9)
+project(fujprog VERSION 4.0)
 
 # control where the static and shared libraries are built so that on windows
 # we don't need to tinker with the path to run the executable
