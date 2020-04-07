@@ -2,6 +2,8 @@
  * FT-232R / FT-231X USB JTAG programmer
  *
  * Copyright (c) 2010 - 2018 Marko Zec, University of Zagreb
+ * Copyright (c) 2014-2019 EMARD
+ * Copyright (c) 2020, kost
  *
  * Redistribution and use in source and binary forms, with or without
  * modification, are permitted provided that the following conditions
