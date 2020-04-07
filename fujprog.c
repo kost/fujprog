@@ -1504,7 +1504,7 @@ exec_svf_tokenized(int tokc, char *tokv[])
 		if (res)
 			break;
 		if ((tokc == 6 || tokc == 8) && strcmp(tokv[3], tokv[5]) != 0) {
-			if (!forceprog) {
+			if (!force_prog) {
 				if (strlen(tokv[3]) == 8 && strlen(tokv[5]) == 8 &&
 				    strcmp(tokv[7], "FFFFFFFF") == 0 &&
 				    cmp_chip_ids(tokv[3], tokv[5]) == 0)
