@@ -888,12 +888,6 @@ shutdown_usb(void)
 	}
 #endif
 	res = ftdi_usb_close(&fc);
-	if (res < 0) {
-		fprintf(stderr, "unable to close ftdi device: %d (%s)\n",
-		    res, ftdi_get_error_string(&fc));
-		return (res);
-	}
-
 	ftdi_deinit(&fc);
 
 #ifdef __APPLE__
