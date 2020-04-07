@@ -58,7 +58,7 @@ You need to install following dependencies (tested with homebrew):
 brew install libftdi libftdi0
 ```
 
-And then it is standard build with -DSTATICLIB=on:
+And then it is standard build with `-DSTATICLIB=ON`:
 
 ```
 mkdir build
