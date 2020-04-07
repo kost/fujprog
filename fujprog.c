@@ -479,6 +479,7 @@ static const char *txfname;	/* file to send */
 static const char *com_name;	/* COM / TTY port name for -a or -t */
 static int spi_addr;		/* Base address for -j flash programming */
 static int global_debug;
+static int force_prog;		/* force programming even if chip ids do not match*/
 
 static struct cable_hw_map *hmp; /* Selected cable hardware map */
 #ifdef WIN32
@@ -1501,19 +1502,23 @@ exec_svf_tokenized(int tokc, char *tokv[])
 		if (res)
 			break;
 		if ((tokc == 6 || tokc == 8) && strcmp(tokv[3], tokv[5]) != 0) {
-			if (strlen(tokv[3]) == 8 && strlen(tokv[5]) == 8 &&
-			    strcmp(tokv[7], "FFFFFFFF") == 0 &&
-			    cmp_chip_ids(tokv[3], tokv[5]) == 0)
-				return (ENODEV);
-			fprintf(stderr, "Received and expected data "
-			    "do not match!\n");
-			if (tokc == 6)
-				fprintf(stderr, "TDO: %s Expected: %s\n",
-				    tokv[3], tokv[5]);
-			if (tokc == 8)
-				fprintf(stderr, "TDO: %s Expected: %s "
-				    "mask: %s\n", tokv[3], tokv[5], tokv[7]);
-			res = EXIT_FAILURE;
+			if (!forceprog) {
+				if (strlen(tokv[3]) == 8 && strlen(tokv[5]) == 8 &&
+				    strcmp(tokv[7], "FFFFFFFF") == 0 &&
+				    cmp_chip_ids(tokv[3], tokv[5]) == 0)
+					return (ENODEV);
+				fprintf(stderr, "Received and expected data "
+				    "do not match!\n");
+				if (tokc == 6)
+					fprintf(stderr, "TDO: %s Expected: %s\n",
+					    tokv[3], tokv[5]);
+				if (tokc == 8)
+					fprintf(stderr, "TDO: %s Expected: %s "
+					    "mask: %s\n", tokv[3], tokv[5], tokv[7]);
+				res = EXIT_FAILURE;
+			} else {
+				fprintf(stderr,"Forcing the programming. Hope you know what you're doing!\n");
+			}
 		}
 		break;
 
@@ -2762,6 +2767,7 @@ usage(void)
 	printf("  -D DELAY	Delay transmission of each byte by"
 	    " DELAY ms\n");
 	printf("  -V 		display version and exit\n");
+	printf("  -z 		Force action\n");
 	printf("  -q 		Suppress messages\n");
 
 	if (terminal) {
@@ -4130,11 +4136,12 @@ main(int argc, char *argv[])
 	int had_terminal = 0;
 	COMMTIMEOUTS com_to;
 #endif
+	force_prog=0;
 
 #ifndef USE_PPI
-#define OPTS	"Vqtdj:b:p:x:p:P:a:e:f:D:rs:"
+#define OPTS	"Vqtdzj:b:p:x:p:P:a:e:f:D:rs:"
 #else
-#define OPTS	"Vqtdj:b:p:x:p:P:a:e:f:D:rs:c:"
+#define OPTS	"Vqtdzj:b:p:x:p:P:a:e:f:D:rs:c:"
 #endif
 	while ((c = getopt(argc, argv, OPTS)) != -1) {
 		switch (c) {
@@ -4166,6 +4173,9 @@ main(int argc, char *argv[])
 			break;
 		case 'D':
 			txfu_ms = atoi(optarg);
+			break;
+		case 'z':
+			force_prog = 1;
 			break;
 		case 'e':
 			txfname = optarg;
