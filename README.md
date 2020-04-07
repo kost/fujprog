@@ -170,22 +170,6 @@ easily with some udev rule:
     ATTRS{idVendor}=="0403", ATTRS{idProduct}=="6015", \
       GROUP="dialout", MODE="666"
 
-Another problem which you can face is segmentation fault after
-programming the device. That usually means that you compiled fujprog
-with newer versions of libusb and/or libftdi. Fujprog will segfault
-if you link it with libusb-compat library as well. You need to 
-compile fujprog with legacy libusb and libftdi. Also, if you have
-multiple versions of libusb/libftdi, make sure you're compiling with 
-the right version. Example which is used to compile release version:
-
-```
-cmake -DBUILD_STATIC=ON -DLIBFTDISTATIC=/opt/libftdi/lib/libftdi.a -DLIBUSB0STATIC=/opt/libusb0/lib/libusb.a -DLIBFTDI_INCLUDE=/opt/libftdi/include .. 
-```
-
-Making it work with newer libusb/libftdi versions consists of 
-rewritting `usb_reset` functionality from legacy libusb. That would
-be awesome pull request from your side.
-
 ## APPLE
 
 Feel free to report any problems. If you have problems running released binary try to compile your own version.
