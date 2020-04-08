@@ -1798,6 +1798,11 @@ exec_jedec_file(char *path, int target, int debug)
 	int jed_dev = -1;
 	int i, j, val, row, res;
 
+	if (path == NULL) {
+		fprintf(stderr, "jedec not file supported for stdin\n");
+		return (EXIT_FAILURE);
+	}
+
 	fd = fopen(path, "r");
 	if (fd == NULL) {
 		fprintf(stderr, "open(%s) failed\n", path);
