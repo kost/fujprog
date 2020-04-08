@@ -4335,9 +4335,13 @@ main(int argc, char *argv[])
 			exit(0);
 		case '?':
 		case 'h':
+			printf("%s v%d.%d (built %s %s)\n", verstr, FUJPROG_VERSION_MAJOR, FUJPROG_VERSION_MINOR, __DATE__, __TIME__);
+			printf("%s\n", credstr);
 			usage();
 			exit(0);
 		default:
+			printf("%s v%d.%d (built %s %s)\n", verstr, FUJPROG_VERSION_MAJOR, FUJPROG_VERSION_MINOR, __DATE__, __TIME__);
+			printf("%s\n", credstr);
 			usage();
 			exit(EXIT_FAILURE);
 		}
