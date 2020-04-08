@@ -1,5 +1,9 @@
 # ULX2S / ULX3S JTAG programmer usage
 
+FPGA ULX2/3 JTAG programmer.
+
+## Usage
+
 FPGA ULX2S / ULX3S JTAG programmer command line options:
 
 ```
@@ -24,6 +28,28 @@ Usage: fujprog [option(s)] [bitstream_file]
   -z 		Force action
   -h 		This help message
   -q 		Suppress messages
+```
+
+## Example usage
+
+Upload bitstream:
+```
+fujprog bitstream.bit
+```
+
+Upload bitstream to flash:
+```
+fujprog -j flash bitstream.bit
+```
+
+Upload bitstream from curl:
+```
+curl https://www.site.com/bitstream.bit | fujprog
+```
+
+Upload flash image from curl:
+```
+curl https://www.site.com/bitstream.img | fujprog -T img -j flash
 ```
 
 # Building
