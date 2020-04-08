@@ -6,6 +6,7 @@ compiler:
 
 os:
   - linux
+  - osx
 
 env:
   - ARCH=x86_64
@@ -32,7 +33,7 @@ install:
   - if [ "$TRAVIS_OS_NAME" = "osx" ];
     then
       brew update;
-      brew install libusb;
+      brew install libusb cmake pkg-config;
     fi
   - mkdir build
   - cd build
@@ -44,7 +45,7 @@ install:
 script:
   - mkdir build
   - cd build
-  - cmake -DBUILD_STATIC=ON ../
+  - cmake ../
   - make 
   - sudo make install/strip
 
