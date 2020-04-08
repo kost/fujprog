@@ -2833,6 +2833,7 @@ usage(void)
 	    " DELAY ms\n");
 	printf("  -V 		display version and exit\n");
 	printf("  -z 		Force action\n");
+	printf("  -h 		This help message\n");
 	printf("  -q 		Suppress messages\n");
 
 	if (terminal) {
