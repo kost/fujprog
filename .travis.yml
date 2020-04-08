@@ -12,14 +12,11 @@ env:
   - ARCH=i386
 
 before_install:
-  - gpg --recv-keys 3CEA9B8868BC3852618EB5B4707F91A424F006F5
-  - wget http://www.intra2net.com/en/developer/libftdi/download/libftdi1-1.2.tar.bz2
-  - wget http://www.intra2net.com/en/developer/libftdi/download/libftdi1-1.2.tar.bz2.sig
-  - gpg --trust-model always --verify libftdi1-1.2.tar.bz2.sig
-  - tar -xjf libftdi1-1.2.tar.bz2
+  - wget https://www.intra2net.com/en/developer/libftdi/download/libftdi1-1.4.tar.bz2
+  - tar -xjf libftdi1-1.4.tar.bz2
 
 install:
-  - cd libftdi1-1.2
+  - cd libftdi1-1.4
   - if [ "$TRAVIS_OS_NAME" = "linux" ];
     then
       sudo apt-get update -qq;
