@@ -44,7 +44,7 @@ install:
 script:
   - mkdir build
   - cd build
-  - cmake ../
+  - cmake -DBUILD_STATIC=ON ../
   - make 
   - sudo make install/strip
 
