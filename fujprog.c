@@ -524,6 +524,35 @@ ms_uptime(void)
 	return (ms);
 }
 
+char *read_stdin(size_t *size)
+{
+	size_t cap = 4096,	/* Initial capacity for the char buffer */
+	    len = 0;		/* Current offset of the buffer */
+	char *buffer = malloc(cap * sizeof(char));
+	int c;
+
+	freopen(NULL, "rb", stdin);
+
+	/* Read char by char, breaking if we reach EOF */
+	do {
+		c=fgetc(stdin);
+		if (feof(stdin)) break;
+		buffer[len] = c;
+		/* When cap == len, we need to resize the buffer
+		 * so that we don't overwrite any bytes
+		 */
+		if (++len == cap)
+			/* Make the output buffer twice its current size */
+			buffer = realloc(buffer, (cap *= 2) * sizeof(char));
+	} while (!feof(stdin));
+	/* Trim off any unused bytes from the buffer */
+	buffer = realloc(buffer, (len + 1) * sizeof(char));
+	/* Pad the last byte so we don't overread the buffer in the future */
+	buffer[len] = '\0';
+	*size = len;
+
+	return buffer;
+}
 
 static int
 set_port_mode(int mode)
@@ -2325,18 +2354,39 @@ exec_bit_file(char *path, int jed_target, int debug)
 	int row_size = 64000 / 8;
 	int hexlen = 50;
 	int res;
+	size_t slen;
+	int is_bit=0;
 
-	fd = fopen(path, "rb");
-	if (fd == NULL) {
-		fprintf(stderr, "open(%s) failed\n", path);
-		return (EXIT_FAILURE);
+	if (path == NULL) {
+		inbuf =(uint8_t *) read_stdin(&slen);
+		flen = slen;
+	} else {
+		fd = fopen(path, "rb");
+		if (fd == NULL) {
+			fprintf(stderr, "open(%s) failed\n", path);
+			return (EXIT_FAILURE);
+		}
+
+		fseek(fd, 0, SEEK_END);
+		flen = ftell(fd);
+		fseek(fd, 0, SEEK_SET);
+		inbuf = malloc(flen);
+		if (inbuf == NULL) {
+			fprintf(stderr, "malloc(%ld) of inbuf failed\n", flen);
+			return (EXIT_FAILURE);
+		}
+
+		got = fread(inbuf, 1, flen, fd);
+		if (got != flen) {
+			fprintf(stderr, "short read: %ld instead of %ld\n",
+			    got, flen);
+			return (EXIT_FAILURE);
+		}
+		if (strcasecmp(&path[strlen(path) - 4], ".img") != 0) {
+			is_bit = 1;
+		}
 	}
 
-	fseek(fd, 0, SEEK_END);
-	flen = ftell(fd);
-	fseek(fd, 0, SEEK_SET);
-
-	inbuf = malloc(flen);
 	outbuf = malloc(flen * 4); /* XXX rough estimate */
 	if (inbuf == NULL || outbuf == NULL) {
 		fprintf(stderr, "malloc(%ld) failed\n", flen);
@@ -2344,18 +2394,11 @@ exec_bit_file(char *path, int jed_target, int debug)
 	}
 	op = outbuf;
 
-	got = fread(inbuf, 1, flen, fd);
-	if (got != flen) {
-		fprintf(stderr, "short read: %ld instead of %ld\n",
-		    got, flen);
-		return (EXIT_FAILURE);
-	}
-
 	buf_sprintf(op, "STATE IDLE;\n");
 	buf_sprintf(op, "STATE RESET;\n");
 	buf_sprintf(op, "STATE IDLE;\n\n");
 
-	if (input_type==TYPE_BIT || strcasecmp(&path[strlen(path) - 4], ".img") != 0) {
+	if (input_type==TYPE_BIT || is_bit) {
 		/* Search for bitstream preamble and IDCODE markers */
 		for (i = 0, j = 0; i < flen - 32 && i < 2000; i++)
 			if (inbuf[i] == 0xbd && inbuf[i + 1] == 0xb3
@@ -2557,31 +2600,42 @@ exec_svf_file(char *path, int debug)
 	long flen;
 	int lines_tot = 1;
 	int res;
+	size_t i, slen;
 
-	fd = fopen(path, "r");
-	if (fd == NULL) {
-		fprintf(stderr, "open(%s) failed\n", path);
-		return (EXIT_FAILURE);
+	if (path == NULL) {
+		fbuf=read_stdin(&slen);
+		flen = slen;
+		lines_tot = 0;
+		for (i=0; i<slen; i++) {
+			if (fbuf[i] == '\n')
+				lines_tot++;
+		}
+	} else {
+		fd = fopen(path, "r");
+		if (fd == NULL) {
+			fprintf(stderr, "open(%s) failed\n", path);
+			return (EXIT_FAILURE);
+		}
+
+		fseek(fd, 0, SEEK_END);
+		flen = 2 * ftell(fd);
+		fseek(fd, 0, SEEK_SET);
+
+		fbuf = malloc(flen);
+		if (fbuf == NULL) {
+			fprintf(stderr, "malloc(%ld) failed\n", flen);
+			return (EXIT_FAILURE);
+		}
+
+		for (linebuf = fbuf; !feof(fd); linebuf += strlen(linebuf) + 1) {
+			if (fgets(linebuf, flen, fd) == NULL)
+				break;
+			lines_tot++;
+			flen -= strlen(linebuf) + 1;
+		}
+		fclose(fd);
+		*linebuf = 0;
 	}
-
-	fseek(fd, 0, SEEK_END);
-	flen = 2 * ftell(fd);
-	fseek(fd, 0, SEEK_SET);
-
-	fbuf = malloc(flen);
-	if (fbuf == NULL) {
-		fprintf(stderr, "malloc(%ld) failed\n", flen);
-		return (EXIT_FAILURE);
-	}
-
-	for (linebuf = fbuf; !feof(fd); linebuf += strlen(linebuf) + 1) {
-		if (fgets(linebuf, flen, fd) == NULL)
-			break;
-		lines_tot++;
-		flen -= strlen(linebuf) + 1;
-	}
-	fclose(fd);
-	*linebuf = 0;
 
 	res = exec_svf_mem(fbuf, lines_tot, debug);
 	free(fbuf);
@@ -2842,6 +2896,10 @@ prog(char *fname, int target, int debug)
 	set_state(RESET);
 
 	commit(1);
+
+	if (!quiet && fname == NULL) {
+		fprintf(stderr, "Type, paste or pipe your bitstream.\n");
+	}
 
 	if (input_type==TYPE_UNSPECIFIED && fname!=NULL) {
 		c = strlen(fname) - 4;
@@ -4303,11 +4361,6 @@ main(int argc, char *argv[])
 		return(res);
 	}
 
-	if (argc == 0 && terminal == 0 && txfname == NULL && reload == 0) {
-		usage();
-		exit(EXIT_FAILURE);
-	}
-
 	if (com_name && terminal == 0 && txfname == NULL && reload == 0) {
 		fprintf(stderr, "error: "
 		    "option -P must be used with -r, -t or -a\n");
@@ -4407,6 +4460,10 @@ main(int argc, char *argv[])
 			printf("Parallel port JTAG cable not supported!\n");
 #endif
 #endif /* !WIN32 */
+	}
+
+	if (argc == 0 && terminal == 0 && txfname == NULL && reload == 0) {
+		prog(NULL,jed_target,debug);
 	}
 
 	do {
