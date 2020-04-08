@@ -456,6 +456,12 @@ static struct cable_hw_map {
 #define	SPI_PAGE_SIZE		256
 #define	SPI_SECTOR_SIZE		(256 * SPI_PAGE_SIZE)
 
+#define TYPE_UNSPECIFIED 0
+#define TYPE_BIT 1
+#define TYPE_IMG 2
+#define TYPE_SVF 3
+#define TYPE_JED 4
+
 static char *statc = "-\\|/";
 
 /* Runtime globals */
@@ -471,6 +477,7 @@ static int progress_perc;
 static int bauds = 115200;	/* async terminal emulation baudrate */
 static int xbauds;		/* binary transfer baudrate */
 static int port_index;
+static int input_type = TYPE_UNSPECIFIED; /* specify type of input */
 static int terminal;		/* terminal emulation mode */
 static int reload;		/* send break to reset f32c */
 static int quiet;		/* suppress standard messages */
@@ -2348,7 +2355,7 @@ exec_bit_file(char *path, int jed_target, int debug)
 	buf_sprintf(op, "STATE RESET;\n");
 	buf_sprintf(op, "STATE IDLE;\n\n");
 
-	if (strcasecmp(&path[strlen(path) - 4], ".img") != 0) {
+	if (input_type==TYPE_BIT || strcasecmp(&path[strlen(path) - 4], ".img") != 0) {
 		/* Search for bitstream preamble and IDCODE markers */
 		for (i = 0, j = 0; i < flen - 32 && i < 2000; i++)
 			if (inbuf[i] == 0xbd && inbuf[i + 1] == 0xb3
@@ -2744,6 +2751,7 @@ usage(void)
 #else
 	printf("  -P TTY	Select TTY port (valid only with -t or -a)\n");
 #endif
+	printf("  -T TYPE	Select TYPE of input (svf, img, bit or jed)\n");
 	printf("  -j TARGET	Select bitstream TARGET as SRAM (default)"
 	    " or FLASH\n");
 	printf("  -f ADDR	Start writing to SPI flash at ADDR, "
@@ -2835,20 +2843,41 @@ prog(char *fname, int target, int debug)
 
 	commit(1);
 
-	c = strlen(fname) - 4;
-	if (c < 0) {
-		usage();
-		exit(EXIT_FAILURE);
+	if (input_type==TYPE_UNSPECIFIED && fname!=NULL) {
+		c = strlen(fname) - 4;
+		if (c < 0) {
+			usage();
+			exit(EXIT_FAILURE);
+		}
+		if (strcasecmp(&fname[c], ".jed") == 0)
+			res = exec_jedec_file(fname, target, debug);
+		else if (strcasecmp(&fname[c], ".bit") == 0 ||
+		    (strcasecmp(&fname[c], ".img") == 0 && target == JED_TGT_FLASH))
+			res = exec_bit_file(fname, target, debug);
+		else if (strcasecmp(&fname[c], ".svf") == 0)
+			res = exec_svf_file(fname, debug);
+		else
+			res = -1;
+	} else {
+		switch (input_type) {
+			case TYPE_JED:
+				res = exec_jedec_file(fname, target, debug);
+				break;
+			case TYPE_BIT:
+				res = exec_bit_file(fname, target, debug);
+				break;
+			case TYPE_SVF:
+				res = exec_svf_file(fname, debug);
+				break;
+			case TYPE_UNSPECIFIED:
+				if (fname == NULL) {
+					res = exec_bit_file(fname, target, debug);
+					break;
+				}
+			default:
+				res = -1;
+		}
 	}
-	if (strcasecmp(&fname[c], ".jed") == 0)
-		res = exec_jedec_file(fname, target, debug);
-	else if (strcasecmp(&fname[c], ".bit") == 0 ||
-	    (strcasecmp(&fname[c], ".img") == 0 && target == JED_TGT_FLASH))
-		res = exec_bit_file(fname, target, debug);
-	else if (strcasecmp(&fname[c], ".svf") == 0)
-		res = exec_svf_file(fname, debug);
-	else
-		res = -1;
 
 	/* Leave TAP in RESET state. */
 	set_port_mode(PORT_MODE_ASYNC);
@@ -4135,12 +4164,26 @@ main(int argc, char *argv[])
 	force_prog=0;
 
 #ifndef USE_PPI
-#define OPTS	"Vqtdzj:b:p:x:p:P:a:e:f:D:rs:"
+#define OPTS	"Vqtdzhj:T:b:p:x:p:P:a:e:f:D:rs:"
 #else
-#define OPTS	"Vqtdzj:b:p:x:p:P:a:e:f:D:rs:c:"
+#define OPTS	"Vqtdzhj:T:b:p:x:p:P:a:e:f:D:rs:c:"
 #endif
 	while ((c = getopt(argc, argv, OPTS)) != -1) {
 		switch (c) {
+		case 'T':
+			if (strcasecmp(optarg, "jed") == 0)
+				input_type = TYPE_JED;
+			else if (strcasecmp(optarg, "img") == 0)
+				input_type = TYPE_IMG;
+			else if (strcasecmp(optarg, "svf") == 0)
+				input_type = TYPE_SVF;
+			else if (strcasecmp(optarg, "bit") == 0)
+				input_type = TYPE_BIT;
+			else {
+				usage();
+				exit(EXIT_FAILURE);
+			}
+			break;
 		case 'a':
 			txfname = optarg;
 			tx_binary = 0;
@@ -4228,6 +4271,9 @@ main(int argc, char *argv[])
 			printf("%s v%d.%d (built %s %s)\n", verstr, FUJPROG_VERSION_MAJOR, FUJPROG_VERSION_MINOR, __DATE__, __TIME__);
 			exit(0);
 		case '?':
+		case 'h':
+			usage();
+			exit(0);
 		default:
 			usage();
 			exit(EXIT_FAILURE);
