@@ -827,7 +827,9 @@ setup_usb(void)
 		system("/sbin/kextunload"
 		    " -bundle-id com.apple.driver.AppleUSBFTDI");
 	} else {
-		fprintf(stderr, "no root permissions, not handling kexts\n");
+		if (!quiet) {
+			fprintf(stderr, "no root permissions, not handling kexts\n");
+		}
 	}
 
 #endif
@@ -2919,8 +2921,10 @@ prog(char *fname, int target, int debug)
 			res = exec_bit_file(fname, target, debug);
 		else if (strcasecmp(&fname[c], ".svf") == 0)
 			res = exec_svf_file(fname, debug);
-		else
+		else {
+			fprintf(stderr, "Could not automatically guess type by extension: %s.\n", &fname[c]);
 			res = -1;
+		}
 	} else {
 		switch (input_type) {
 			case TYPE_JED:
