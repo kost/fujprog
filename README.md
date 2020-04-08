@@ -3,12 +3,12 @@
 FPGA ULX2S / ULX3S JTAG programmer command line options:
 
 ```
-ULX2S / ULX3S JTAG programmer  v3.2 (built Apr  4 2020 18:41:07)
 Usage: fujprog [option(s)] [bitstream_file]
 
  Valid options:
   -p PORT	Select USB JTAG / UART PORT (default is 0)
   -P TTY	Select TTY port (valid only with -t or -a)
+  -T TYPE	Select TYPE of input (svf, img, bit or jed)
   -j TARGET	Select bitstream TARGET as SRAM (default) or FLASH
   -f ADDR	Start writing to SPI flash at ADDR, optional with -j flash
   -s FILE	Convert bitstream to SVF FILE and exit
@@ -21,6 +21,8 @@ Usage: fujprog [option(s)] [bitstream_file]
   -d 		debug (verbose)
   -D DELAY	Delay transmission of each byte by DELAY ms
   -V 		display version and exit
+  -z 		Force action
+  -h 		This help message
   -q 		Suppress messages
 ```
 
