@@ -69,7 +69,8 @@ script:
     then 
 	cmake -DCMAKE_TOOLCHAIN_FILE=`pwd`/../cmake/Toolchain-cross-mingw32.cmake ../ ;
     else
-	cmake ../
+	cmake ../;
+    fi
   - make 
   - sudo make install/strip
   - if [ $TRAVIS_OS_NAME = linux ] && [ ! -n "$CMakeArgs" ]; then LD_LIBRARY_PATH=/usr/local/lib /usr/local/bin/fujprog -h; fi
