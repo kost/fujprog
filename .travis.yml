@@ -48,4 +48,11 @@ script:
   - cmake ../
   - make 
   - sudo make install/strip
-
+  - if [ "$TRAVIS_OS_NAME" = "linux" ] && [ "$ARCH" = "x86_64" ] ;
+    then
+	cd ..; 
+	mkdir mingw32;
+	cmake -DCMAKE_TOOLCHAIN_FILE=`pwd`/../cmake/Toolchain-cross-mingw32.cmake ..;
+	make;
+    fi
+  - /usr/local/bin/fujprog -h
