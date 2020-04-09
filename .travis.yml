@@ -67,8 +67,8 @@ script:
   - cd build
   - if [ $TRAVIS_OS_NAME = linux ] && [ -n "$CMakeArgs" ]; 
     then 
-	cmake -DCMAKE_TOOLCHAIN_FILE=`pwd`/../cmake/Toolchain-cross-mingw32.cmake ../ ;
-    else
+	cmake -DCMAKE_TOOLCHAIN_FILE=`pwd`/../cmake/Toolchain-cross-mingw32.cmake ../;
+    else;
 	cmake ../;
     fi
   - make 
