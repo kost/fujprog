@@ -75,6 +75,9 @@ script:
       then
         cmake -DCMAKE_TOOLCHAIN_FILE=`pwd`/../cmake/Toolchain-cross-mingw32.cmake ../;
       fi
+    elif [ "$TRAVIS_OS_NAME" = "osx" ];
+    then
+        cmake -DBUILD_STATICLIB=ON ../;
     else
       cmake ../;
     fi
