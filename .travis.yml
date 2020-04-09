@@ -67,7 +67,14 @@ script:
   - cd build
   - if [ $TRAVIS_OS_NAME = linux ] && [ -n "$CMakeArgs" ];
     then 
-      cmake -DCMAKE_TOOLCHAIN_FILE=`pwd`/../cmake/Toolchain-cross-mingw32.cmake ../;
+      if [ "$ARCH" = "x86_64" ];
+      then
+	cp -f ../ftd2xx-amd64.lib ../ftd2xx.lib;
+	cmake -DCMAKE_TOOLCHAIN_FILE=`pwd`/../cmake/Toolchain-cross-mingw64.cmake ../;
+      elif [ "$ARCH" = "i386" ];
+      then
+	cmake -DCMAKE_TOOLCHAIN_FILE=`pwd`/../cmake/Toolchain-cross-mingw32.cmake ../;
+      fi
     else
       cmake ../;
     fi
