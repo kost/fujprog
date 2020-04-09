@@ -1,16 +1,35 @@
 language: c
 
-compiler:
-  - gcc
-  - clang
-
-os:
-  - linux
-  - osx
-
-env:
-  - ARCH=x86_64
-  - ARCH=i386
+matrix:
+  include:
+  - os: linux
+    env: PLATFORM="linux-gcc" CMakeArgs="" ARCH=x86_64
+    compiler: gcc
+    arch: amd64
+  - os: linux
+    env: PLATFORM="linux-clang" CMakeArgs="" ARCH=x86_64
+    compiler: clang
+    arch: amd64
+  - os: linux
+    env: PLATFORM="linux-gcc" CMakeArgs="" ARCH=i386
+    compiler: gcc
+    arch: amd64
+  - os: linux
+    env: PLATFORM="linux-clang" CMakeArgs="" ARCH=i386
+    compiler: clang
+    arch: amd64
+  - os: osx
+    env: PLATFORM="osx-gcc" CMakeArgs=""
+    compiler: gcc
+  - os: osx
+    env: PLATFORM="osx-clang" CMakeArgs=""
+    compiler: clang
+  - os: linux
+    env: PLATFORM="win-mingw-x86" CMakeArgs="-D CMAKE_SYSTEM_NAME=Windows -D CMAKE_C_COMPILER=x86_64-w64-mingw32-gcc-posix -D CMAKE_CXX_COMPILER=x86_64-w64-mingw32-g++-posix"
+    compiler: gcc
+  - os: linux
+    env: PLATFORM="win-mingw-x64" CMakeArgs="-D CMAKE_SYSTEM_NAME=Windows -D CMAKE_C_COMPILER=i686-w64-mingw32-gcc-posix -D CMAKE_CXX_COMPILER=i686-w64-mingw32-g++-posix"
+    compiler: gcc
 
 before_install:
   - wget https://www.intra2net.com/en/developer/libftdi/download/libftdi1-1.4.tar.bz2
@@ -30,6 +49,7 @@ install:
         export CFLAGS="-m32";
       fi
     fi
+  - if [ $TRAVIS_OS_NAME = linux ] && [ -n "$CMakeArgs" ]; then unset CXX; unset CC; sudo apt-get install gcc-mingw-w64-i686 gcc-mingw-w64-x86-64 g++-mingw-w64-i686 g++-mingw-w64-x86-64; fi
   - if [ "$TRAVIS_OS_NAME" = "osx" ];
     then
       brew update;
@@ -48,11 +68,6 @@ script:
   - cmake ../
   - make 
   - sudo make install/strip
-  - if [ "$TRAVIS_OS_NAME" = "linux" ] && [ "$ARCH" = "x86_64" ] ;
-    then
-	cd ..; 
-	mkdir mingw32;
-	cmake -DCMAKE_TOOLCHAIN_FILE=`pwd`/../cmake/Toolchain-cross-mingw32.cmake ..;
-	make;
-    fi
-  - /usr/local/bin/fujprog -h
+  - if [ $TRAVIS_OS_NAME = linux ] && [ ! -n "$CMakeArgs" ]; then /usr/local/bin/fujprog -h; fi
+  - if [ $TRAVIS_OS_NAME = osx ]; then /usr/local/bin/fujprog -h; fi
+
