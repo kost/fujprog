@@ -25,10 +25,10 @@ matrix:
     env: PLATFORM="osx-clang" CMakeArgs=""
     compiler: clang
   - os: linux
-    env: PLATFORM="win-mingw-x86" CMakeArgs="-D CMAKE_SYSTEM_NAME=Windows -D CMAKE_C_COMPILER=x86_64-w64-mingw32-gcc-posix -D CMAKE_CXX_COMPILER=x86_64-w64-mingw32-g++-posix"
+    env: PLATFORM="win-mingw-x86" CMakeArgs="-D CMAKE_SYSTEM_NAME=Windows -D CMAKE_C_COMPILER=x86_64-w64-mingw32-gcc-posix -D CMAKE_CXX_COMPILER=x86_64-w64-mingw32-g++-posix" ARCH="x86_64"
     compiler: gcc
   - os: linux
-    env: PLATFORM="win-mingw-x64" CMakeArgs="-D CMAKE_SYSTEM_NAME=Windows -D CMAKE_C_COMPILER=i686-w64-mingw32-gcc-posix -D CMAKE_CXX_COMPILER=i686-w64-mingw32-g++-posix"
+    env: PLATFORM="win-mingw-x64" CMakeArgs="-D CMAKE_SYSTEM_NAME=Windows -D CMAKE_C_COMPILER=i686-w64-mingw32-gcc-posix -D CMAKE_CXX_COMPILER=i686-w64-mingw32-g++-posix" ARCH="i386"
     compiler: gcc
 
 before_install:
@@ -49,7 +49,6 @@ install:
         export CFLAGS="-m32";
       fi
     fi
-  - if [ $TRAVIS_OS_NAME = linux ] && [ -n "$CMakeArgs" ]; then unset CXX; unset CC; sudo apt-get install gcc-mingw-w64-i686 gcc-mingw-w64-x86-64 g++-mingw-w64-i686 g++-mingw-w64-x86-64; fi
   - if [ "$TRAVIS_OS_NAME" = "osx" ];
     then
       brew update;
@@ -61,6 +60,7 @@ install:
   - make
   - sudo make install
   - cd ../../
+  - if [ $TRAVIS_OS_NAME = linux ] && [ -n "$CMakeArgs" ]; then unset CXX; unset CC; sudo apt-get install gcc-mingw-w64-i686 gcc-mingw-w64-x86-64 g++-mingw-w64-i686 g++-mingw-w64-x86-64; fi
 
 script:
   - mkdir build
@@ -68,6 +68,6 @@ script:
   - cmake ../
   - make 
   - sudo make install/strip
-  - if [ $TRAVIS_OS_NAME = linux ] && [ ! -n "$CMakeArgs" ]; then /usr/local/bin/fujprog -h; fi
+  - if [ $TRAVIS_OS_NAME = linux ] && [ ! -n "$CMakeArgs" ]; then LD_LIBRARY_PATH=/usr/local/lib /usr/local/bin/fujprog -h; fi
   - if [ $TRAVIS_OS_NAME = osx ]; then /usr/local/bin/fujprog -h; fi
 
