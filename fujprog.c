@@ -43,7 +43,7 @@
  * - execute SVF commands provided as command line args?
  */
 
-static const char *verstr = "ULX2S / ULX3S JTAG programmer ";
+static const char *verstr = "ULX2S / ULX3S JTAG programmer";
 static const char *credstr = "Copyright (C) Marko Zec, EMARD, gojimmypi, kost and contributors";
 
 
@@ -4231,6 +4231,10 @@ done:
 	return (res);
 }
 
+void header(void) {
+	printf("%s v%d.%d (git %s built %s %s)\n", verstr, FUJPROG_VERSION_MAJOR, FUJPROG_VERSION_MINOR, FUJPROG_GIT_REVISION, __DATE__, __TIME__);
+	printf("%s\n", credstr);
+}
 
 int
 main(int argc, char *argv[])
@@ -4350,17 +4354,15 @@ main(int argc, char *argv[])
 #endif
 			break;
 		case 'V':
-			printf("%s v%d.%d (built %s %s)\n", verstr, FUJPROG_VERSION_MAJOR, FUJPROG_VERSION_MINOR, __DATE__, __TIME__);
+			header();
 			exit(0);
 		case '?':
 		case 'h':
-			printf("%s v%d.%d (built %s %s)\n", verstr, FUJPROG_VERSION_MAJOR, FUJPROG_VERSION_MINOR, __DATE__, __TIME__);
-			printf("%s\n", credstr);
+			header();
 			usage();
 			exit(0);
 		default:
-			printf("%s v%d.%d (built %s %s)\n", verstr, FUJPROG_VERSION_MAJOR, FUJPROG_VERSION_MINOR, __DATE__, __TIME__);
-			printf("%s\n", credstr);
+			header();
 			usage();
 			exit(EXIT_FAILURE);
 		}
@@ -4376,8 +4378,7 @@ main(int argc, char *argv[])
 #endif
 
 	if (!quiet) {
-		printf("%s v%d.%d (built %s %s)\n", verstr, FUJPROG_VERSION_MAJOR, FUJPROG_VERSION_MINOR, __DATE__, __TIME__);
-		printf("%s\n", credstr);
+		header();
 	}
 
 	if (svf_name) {

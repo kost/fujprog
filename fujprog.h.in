@@ -3,6 +3,8 @@
 
 #define FUJPROG_VERSION_MAJOR @fujprog_VERSION_MAJOR@
 #define FUJPROG_VERSION_MINOR @fujprog_VERSION_MINOR@
+#define FUJPROG_GIT_REVISION "@fujprog_git_version@"
+#define FUJPROG_BUILD_TIMESTAMP "@_time_stamp@"
 
 #endif
 

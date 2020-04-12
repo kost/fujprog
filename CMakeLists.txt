@@ -50,6 +50,23 @@ else()
 	link_directories(${LIBUSB_LIBRARY_DIRS} ${LIBFTDI_LIBRARY_DIRS})
 endif()
 
+set(fujprog_git_version "unknown")
+
+find_package(Git)
+if(GIT_FOUND)
+  execute_process(
+    COMMAND ${GIT_EXECUTABLE} rev-parse --short HEAD
+    WORKING_DIRECTORY "${local_dir}"
+    OUTPUT_VARIABLE fujprog_git_version
+    ERROR_QUIET
+    OUTPUT_STRIP_TRAILING_WHITESPACE
+  )
+  message( STATUS "GIT hash: ${fujprog_git_version}")
+else()
+  message(STATUS "GIT not found")
+endif()
+
+string(TIMESTAMP _time_stamp)
 
 add_executable(fujprog
 	${FUJPROG_SOURCE}
