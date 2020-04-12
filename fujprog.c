@@ -2389,7 +2389,7 @@ exec_bit_file(char *path, int jed_target, int debug)
 			    got, flen);
 			return (EXIT_FAILURE);
 		}
-		if (strcasecmp(&path[strlen(path) - 4], ".img") != 0) {
+		if (strcasecmp(&path[strlen(path) - 4], ".bit") == 0) {
 			is_bit = 1;
 		}
 	}
@@ -2912,8 +2912,15 @@ prog(char *fname, int target, int debug)
 	if (input_type==TYPE_UNSPECIFIED && fname!=NULL) {
 		c = strlen(fname) - 4;
 		if (c < 0) {
-			usage();
-			exit(EXIT_FAILURE);
+			/* Handle small length file names */
+			/* Execute flash target automatically */
+			if (strlen(fname)>0) {
+				target = JED_TGT_FLASH;
+				res = exec_bit_file(fname, target, debug);
+			} else {
+				usage();
+				exit(EXIT_FAILURE);
+			}
 		}
 		if (strcasecmp(&fname[c], ".jed") == 0)
 			res = exec_jedec_file(fname, target, debug);
@@ -2923,14 +2930,20 @@ prog(char *fname, int target, int debug)
 		else if (strcasecmp(&fname[c], ".svf") == 0)
 			res = exec_svf_file(fname, debug);
 		else {
-			fprintf(stderr, "Could not automatically guess type by extension: %s.\n", &fname[c]);
-			res = -1;
+			/* Execute flash target automatically */
+			if (!quiet) {
+				fprintf(stderr, "Could not automatically guess type by extension: %s.\n", &fname[c]);
+				fprintf(stderr, "Automatically targeting flash and setting image type.\n");
+			}
+			target = JED_TGT_FLASH;
+			res = exec_bit_file(fname, target, debug);
 		}
 	} else {
 		switch (input_type) {
 			case TYPE_JED:
 				res = exec_jedec_file(fname, target, debug);
 				break;
+			case TYPE_IMG:
 			case TYPE_BIT:
 				res = exec_bit_file(fname, target, debug);
 				break;
@@ -2943,6 +2956,7 @@ prog(char *fname, int target, int debug)
 					break;
 				}
 			default:
+				fprintf(stderr, "Could not recognize type specified: %d.\n", input_type);
 				res = -1;
 		}
 	}
