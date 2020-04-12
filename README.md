@@ -1,3 +1,5 @@
+[![Travis (.org)](https://img.shields.io/travis/kost/fujprog)](https://travis-ci.org/kost/fujprog "Travis CI")
+
 # ULX2S / ULX3S JTAG programmer
 
 This is FPGA JTAG programmer for [ULX2/3S boards](https://radiona.org/ulx3s/). You need to have bitstream ready.
