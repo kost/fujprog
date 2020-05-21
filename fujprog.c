@@ -474,6 +474,8 @@ static int last_ledblink_ms;	/* Last time we toggled the CBUS LED */
 static int led_state;		/* CBUS LED indicator state */
 static int blinker_phase;
 static int progress_perc;
+static int display_log;		/* display in log like fashion */
+static int display_counter;	/* display counter for displaying progress */
 static int bauds = 115200;	/* async terminal emulation baudrate */
 static int xbauds;		/* binary transfer baudrate */
 static int port_index;
@@ -574,9 +576,20 @@ set_port_mode(int mode)
 		need_led_blink = 0;
 		led_state ^= USB_CBUS_LED;
 		if (!quiet && progress_perc < 100) {
-			fprintf(stderr, "\rProgramming: %d%% %c ",
-			    progress_perc, statc[blinker_phase]);
-			fflush(stderr);
+			if (!display_log) {
+				fprintf(stderr, "\r");
+				fprintf(stderr, "Programming: %d%% %c ",
+				progress_perc, statc[blinker_phase]);
+				fflush(stderr);
+			} else {
+				display_counter++;
+				if (display_counter >= display_log) {
+					display_counter=0;
+					fprintf(stderr, "Programming: %d%%\n",
+					progress_perc);
+					fflush(stderr);
+				}
+			}
 		}
 		blinker_phase = (blinker_phase + 1) & 0x3;
 	}
@@ -2834,6 +2847,7 @@ usage(void)
 	printf("  -V 		display version and exit\n");
 	printf("  -z 		Force action\n");
 	printf("  -h 		This help message\n");
+	printf("  -l X 		Display messages in log fashion every <X> times\n");
 	printf("  -q 		Suppress messages\n");
 
 	if (terminal) {
@@ -2970,7 +2984,9 @@ prog(char *fname, int target, int debug)
 	tend = ms_uptime();
 	if (res == 0) {
 		if (!quiet) {
-			fprintf(stderr, "\rProgramming: 100%%  ");
+			if (!display_log)
+				fprintf(stderr, "\r");
+			fprintf(stderr, "Programming: 100%%  ");
 			fprintf(stderr, "\nCompleted in %.2f seconds.\n",
 			    (tend - tstart) / 1000.0);
 		}
@@ -4250,9 +4266,9 @@ main(int argc, char *argv[])
 	force_prog=0;
 
 #ifndef USE_PPI
-#define OPTS	"Vqtdzhj:T:b:p:x:p:P:a:e:f:D:rs:"
+#define OPTS	"Vqtdzhj:l:T:b:p:x:p:P:a:e:f:D:rs:"
 #else
-#define OPTS	"Vqtdzhj:T:b:p:x:p:P:a:e:f:D:rs:c:"
+#define OPTS	"Vqtdzhj:l:T:b:p:x:p:P:a:e:f:D:rs:c:"
 #endif
 	while ((c = getopt(argc, argv, OPTS)) != -1) {
 		switch (c) {
@@ -4269,6 +4285,10 @@ main(int argc, char *argv[])
 				usage();
 				exit(EXIT_FAILURE);
 			}
+			break;
+		case 'l':
+			display_log = atoi(optarg);
+			display_counter = 0;
 			break;
 		case 'a':
 			txfname = optarg;
