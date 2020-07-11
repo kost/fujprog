@@ -479,6 +479,7 @@ static int display_counter;	/* display counter for displaying progress */
 static int bauds = 115200;	/* async terminal emulation baudrate */
 static int xbauds;		/* binary transfer baudrate */
 static int port_index;
+static const char *serial = NULL; /* FTDI serial to support more than one device */
 static int input_type = TYPE_UNSPECIFIED; /* specify type of input */
 static int terminal;		/* terminal emulation mode */
 static int reload;		/* send break to reset f32c */
@@ -685,7 +686,6 @@ setup_usb(void)
 	FT_STATUS res;
 	FT_DEVICE ftDevice;
 	DWORD deviceID;
-	char SerialNumber[16];
 	char Description[64];
 
 	res = FT_Open(port_index, &ftHandle);
@@ -694,7 +694,7 @@ setup_usb(void)
 		return (res);
 	}
 
-	res = FT_GetDeviceInfo(ftHandle, &ftDevice, &deviceID, SerialNumber,
+	res = FT_GetDeviceInfo(ftHandle, &ftDevice, &deviceID, serial,
 	    Description, NULL);
 	if (res != FT_OK) {
 		fprintf(stderr, "FT_GetDeviceInfo() failed\n");
@@ -855,13 +855,13 @@ setup_usb(void)
 
 	for (hmp = cable_hw_map; hmp->cable_hw != CABLE_HW_UNKNOWN; hmp++) {
 		res = ftdi_usb_open_desc_index(&fc, hmp->usb_vid, hmp->usb_pid,
-		    hmp->cable_path, NULL, port_index);
+		    hmp->cable_path, serial, port_index);
 		if (res == 0)
 			break;
 	}
 	if (res < 0) {
 		res = ftdi_usb_open_desc_index(&fc, 0x0403, 0x6001,
-		    NULL, NULL, port_index);
+		    NULL, serial, port_index);
 		if (res < 0) {
 #ifdef __APPLE__
 			if (uid<0 || uid!=euid) {
@@ -2848,6 +2848,7 @@ usage(void)
 	printf("  -z 		Force action\n");
 	printf("  -h 		This help message\n");
 	printf("  -l X 		Display messages in log fashion every <X> times\n");
+	printf("  -S serial 	Select FTDI by serial to support multiple boards\n");
 	printf("  -q 		Suppress messages\n");
 
 	if (terminal) {
@@ -4266,9 +4267,9 @@ main(int argc, char *argv[])
 	force_prog=0;
 
 #ifndef USE_PPI
-#define OPTS	"Vqtdzhj:l:T:b:p:x:p:P:a:e:f:D:rs:"
+#define OPTS	"Vqtdzhj:l:T:b:p:x:p:P:a:e:f:D:rs:S:"
 #else
-#define OPTS	"Vqtdzhj:l:T:b:p:x:p:P:a:e:f:D:rs:c:"
+#define OPTS	"Vqtdzhj:l:T:b:p:x:p:P:a:e:f:D:rs:S:c:"
 #endif
 	while ((c = getopt(argc, argv, OPTS)) != -1) {
 		switch (c) {
@@ -4357,6 +4358,9 @@ main(int argc, char *argv[])
 		case 'P':
 			com_name = optarg;
 			cable_hw = CABLE_HW_COM;
+			break;
+		case 'S':
+			serial = optarg;
 			break;
 		case 'q':
 			quiet = 1;
