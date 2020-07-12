@@ -29,6 +29,8 @@ Usage: fujprog [option(s)] [bitstream_file]
   -V 		display version and exit
   -z 		Force action
   -h 		This help message
+  -l X		Display messages in log fashion every <X> times
+  -S serial	Select FTDI by serial to support multiple boards
   -q 		Suppress messages
 ```
 
@@ -220,7 +222,7 @@ Contributions from EMARD, gojimmypi and kost.
 
 Copyright (C), 2008-2018 Marko Zec, University of Zagreb
 
-Copyright (c) 2014-2019 EMARD
+Copyright (c), 2014-2019 EMARD
 
-Copyright (c) 2020, kost
+Copyright (c), 2020 kost
 
