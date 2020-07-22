@@ -2633,6 +2633,7 @@ exec_bit_file(char *path, int jed_target, int debug)
 		buf_sprintf(op, "RUNTEST IDLE	32 TCK;\n\n");
 
 		/* Erase sectors */
+		printf("Erasing sectors, please wait.\n");
 		for (i = 0; i < flen; i += SPI_SECTOR_SIZE) {
 			addr = i + spi_addr;
 
