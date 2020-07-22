@@ -126,6 +126,27 @@ cmake -DCMAKE_TOOLCHAIN_FILE=`pwd`/../cmake/Toolchain-cross-mingw32.cmake ..
 make
 ```
 
+## FreeBSD build
+
+You need to install dependencies:
+```
+pkg install libftdi1 pkgconf git cmake
+```
+
+And then it is standard CMake procedure:
+```
+mkdir build
+cd build
+cmake ..
+make
+make install
+```
+
+If you need static binary version, you need to perform following cmake command:
+```
+cmake -E env CFLAGS="-pthread" cmake -DBUILD_STATIC=ON ..
+```
+
 # Windows Notes
 
 You may need to disable windows security block
