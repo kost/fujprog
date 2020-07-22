@@ -2482,7 +2482,7 @@ char *exec_svf_line(char *cmdbuf)
 static int
 exec_info(char *path, int jed_target, int debug)
 {
-	int i, ret=0;
+	int i, ret=0, fsize=0;
 	char *idcode;
 	char cmds[5][128]={
 	"STATE IDLE",
@@ -2500,6 +2500,11 @@ exec_info(char *path, int jed_target, int debug)
 		}
 	}
 	printf("FPGA IDCODE: %s\n", idcode);
+	if (strcmp(idcode,"41111043")==0) fsize=25;
+	if (strcmp(idcode,"21111043")==0) fsize=12;
+	if (strcmp(idcode,"41112043")==0) fsize=45;
+	if (strcmp(idcode,"41113043")==0) fsize=85;
+	printf("FPGA identified SIZE: %d\n", fsize);
 	return(0);
 }
 
