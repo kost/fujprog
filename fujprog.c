@@ -536,6 +536,7 @@ static const char *com_name;	/* COM / TTY port name for -a or -t */
 static int spi_addr;		/* Base address for -j flash programming */
 static int global_debug;
 static int force_prog;		/* force programming even if chip ids do not match*/
+static int opt_info=0;		/* display info */
 
 static struct cable_hw_map *hmp; /* Selected cable hardware map */
 #ifdef WIN32
@@ -616,6 +617,8 @@ set_port_mode(int mode)
 	/* Flush any stale TX buffers */
 	commit(1);
 
+	/* Run only if not in identify mode */
+	if (!opt_info) {
 	/* Blink status LED by deactivating CBUS pulldown pin */
 	if (need_led_blink) {
 		need_led_blink = 0;
@@ -637,6 +640,7 @@ set_port_mode(int mode)
 			}
 		}
 		blinker_phase = (blinker_phase + 1) & 0x3;
+	}
 	}
 
 #ifdef WIN32
@@ -1557,12 +1561,19 @@ exec_svf_tokenized(int tokc, char *tokv[])
 	int cmd, i, res = 0;
 	int repeat = 1, delay_ms = 0;
 
+	if (global_debug) {
+		for (i= 0; i< tokc; i++) {
+			printf("[d] exec_svf_tokenized - %d got token: %s\n", i, tokv[i]);
+		}
+	}
 	for (i = 0; svf_cmdtable[i].cmd_str != NULL; i++) {
 		if (strcmp(tokv[0], svf_cmdtable[i].cmd_str) == 0)
 			break;
 	}
 
 	cmd = svf_cmdtable[i].cmd_id;
+	if (global_debug)
+		printf("[d] exec_svf_tokenized - using command id: %d\n", cmd);
 	switch (cmd) {
 	case SVF_SDR:
 	case SVF_SIR:
@@ -1592,6 +1603,13 @@ exec_svf_tokenized(int tokc, char *tokv[])
 		}
 		if (res)
 			break;
+		if ((tokc == 6 || tokc ==8 ) && opt_info) {
+			if (strlen(tokv[3]) == 8 && strlen(tokv[5]) == 8 &&
+				strcmp(tokv[7], "FFFFFFFF") == 0)
+			{
+				break;
+			}
+		}
 		if ((tokc == 6 || tokc == 8) && strcmp(tokv[3], tokv[5]) != 0) {
 			if (!force_prog) {
 				if (strlen(tokv[3]) == 8 && strlen(tokv[5]) == 8 &&
@@ -2400,6 +2418,92 @@ done:
 	 *(p)++ = 0; \
 } while (0)
 
+char *exec_svf_line(char *cmdbuf)
+{
+	int tokc;
+	int lno,i;
+	char *tokv[256];
+	int res = 0;
+	char *cp;
+	char *retbuf=cmdbuf;
+
+	char cmdbuf2[]=
+	"STATE IDLE;\n"
+	"STATE RESET;\n"
+	"STATE IDLE;\n\n"
+	"SIR	8	TDI	(E0);\n"
+	"SDR	32	TDI	(00000000)\n"
+	"	TDO	(00000000)\n"
+	"	MASK	(FFFFFFFF);\n\n";
+
+	if (global_debug)
+		printf("[d] Using following command: %s\n", cmdbuf);
+
+	/* Normalize to all upper case letters, separate tokens */
+	tokc = 0;
+	tokv[0] = cmdbuf;
+	for (cp = cmdbuf; *cp != 0; cp++) {
+		if (*cp == ' ') {
+			*cp++ = 0;
+			tokc++;
+			tokv[tokc] = cp;
+		}
+		*cp = toupper(*cp);
+	}
+	if (*tokv[tokc] != 0)
+		tokc++;
+
+	if (global_debug)
+		printf("[d] Using following tokenized command: %s\n", cmdbuf);
+
+	/* Execute command */
+	res = exec_svf_tokenized(tokc, tokv);
+	if (global_debug) {
+		printf("[d] exec_svf_tokenized returned %d\n", res);
+		printf("[d] got id: %s\n", tokv[3]);
+	}
+	if (res) {
+		if (res != ENODEV)
+			fprintf(stderr, "Line %s: %s\n", cmdbuf,
+			    strerror(res));
+		return (NULL);
+	}
+
+	cp = cmdbuf;
+
+	commit(1);
+
+	if (tokc>3) {
+		retbuf=tokv[3];
+	}
+	return (retbuf);
+}
+
+static int
+exec_info(char *path, int jed_target, int debug)
+{
+	int i, ret=0;
+	char *idcode;
+	char cmds[5][128]={
+	"STATE IDLE",
+	"STATE RESET",
+	"STATE IDLE",
+	"SIR 8 TDI E0",
+	"SDR 32 TDI 00000000 TDO 00000000 MASK FFFFFFFF"
+	};
+
+	for (i=0; i < 5; i++) {
+		idcode=exec_svf_line(cmds[i]);
+		if (idcode==NULL) {
+			printf("Error sending line: %s\n", cmds[i]);
+			return(EXIT_FAILURE);
+		}
+	}
+	printf("FPGA IDCODE: %s\n", idcode);
+	return(0);
+}
+
+
 /*
  * Parse a Lattice ECP5 bitstream file and convert it into a SVF stream,
  * stored in a contiguos chunk of memory.  If parsing is sucessfull proceed
@@ -2870,6 +2974,7 @@ usage(void)
 	printf("  -P TTY	Select TTY port (valid only with -t or -a)\n");
 #endif
 	printf("  -T TYPE	Select TYPE of input (svf, img, bit or jed)\n");
+	printf("  -i 		identify and exit\n");
 	printf("  -j TARGET	Select bitstream TARGET as SRAM (default)"
 	    " or FLASH\n");
 	printf("  -f ADDR	Start writing to SPI flash at ADDR, "
@@ -4311,9 +4416,9 @@ main(int argc, char *argv[])
 	force_prog=0;
 
 #ifndef USE_PPI
-#define OPTS	"Vqtdzhj:l:T:b:p:x:p:P:a:e:f:D:rs:S:"
+#define OPTS	"Vqtdzhij:l:T:b:p:x:p:P:a:e:f:D:rs:S:"
 #else
-#define OPTS	"Vqtdzhj:l:T:b:p:x:p:P:a:e:f:D:rs:S:c:"
+#define OPTS	"Vqtdzhij:l:T:b:p:x:p:P:a:e:f:D:rs:S:c:"
 #endif
 	while ((c = getopt(argc, argv, OPTS)) != -1) {
 		switch (c) {
@@ -4370,6 +4475,9 @@ main(int argc, char *argv[])
 		case 'e':
 			txfname = optarg;
 			tx_binary = 1;
+			break;
+		case 'i':
+			opt_info = 1;
 			break;
 		case 'j':
 			if (strcasecmp(optarg, "sram") == 0)
@@ -4449,7 +4557,7 @@ main(int argc, char *argv[])
 		header();
 	}
 
-	if (svf_name) {
+	if (svf_name && opt_info==0) {
 		if (terminal || reload || txfname || com_name || argc == 0) {
 			usage();
 			exit(EXIT_FAILURE);
@@ -4559,21 +4667,25 @@ main(int argc, char *argv[])
 #endif /* !WIN32 */
 	}
 
-	if (argc == 0 && terminal == 0 && txfname == NULL && reload == 0) {
-		prog(NULL,jed_target,debug);
-	}
-
-	do {
-		if (reload) {
-			genbrk();
-			reload = 0;
+	if (opt_info) {
+		res = exec_info(argv[0], jed_target, debug);
+	} else {
+		if (argc == 0 && terminal == 0 && txfname == NULL && reload == 0) {
+			prog(NULL,jed_target,debug);
 		}
-		if (argc)
-			prog(argv[0], jed_target, debug);
-		jed_target = JED_TGT_SRAM; /* for subsequent prog() calls */
-		if (txfname)
-			txfile();
-	} while (terminal && term_emul() == 0);
+
+		do {
+			if (reload) {
+				genbrk();
+				reload = 0;
+			}
+			if (argc)
+				prog(argv[0], jed_target, debug);
+			jed_target = JED_TGT_SRAM; /* for subsequent prog() calls */
+			if (txfname)
+				txfile();
+		} while (terminal && term_emul() == 0);
+	}
 
 #ifdef WIN32
 	if (had_terminal)
