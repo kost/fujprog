@@ -15,6 +15,7 @@ Usage: fujprog [option(s)] [bitstream_file]
   -p PORT	Select USB JTAG / UART PORT (default is 0)
   -P TTY	Select TTY port (valid only with -t or -a)
   -T TYPE	Select TYPE of input (svf, img, bit or jed)
+  -i 		identify and exit
   -j TARGET	Select bitstream TARGET as SRAM (default) or FLASH
   -f ADDR	Start writing to SPI flash at ADDR, optional with -j flash
   -s FILE	Convert bitstream to SVF FILE and exit
@@ -30,7 +31,7 @@ Usage: fujprog [option(s)] [bitstream_file]
   -z 		Force action
   -h 		This help message
   -l X		Display messages in log fashion every <X> times
-  -S serial	Select FTDI by serial to support multiple boards
+  -S serial 	Select FTDI by serial to support multiple boards
   -q 		Suppress messages
 ```
 
