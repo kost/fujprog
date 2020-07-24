@@ -748,13 +748,25 @@ setup_usb(void)
 		fprintf(stderr, "FT_GetDeviceInfo() failed\n");
 		return (res);
 	}
+
+	if (global_debug)
+		fprintf(stderr, "Going through cable_hw_map loop\n");
+
 	for (hmp = cable_hw_map; hmp->cable_hw != CABLE_HW_UNKNOWN; hmp++) {
+		if (global_debug)
+			fprintf(stderr, "Looking cableID %d (0x%04x, 0x%04x) with path %s\n", hmp->cable_hw, hmp->usb_vid, hmp->usb_pid, hmp->cable_path);
 		if ((deviceID == hmp->usb_vid << 16 | hmp->usb_pid)
-		    && strcmp(Description, hmp->cable_path) == 0)
+		    && strcmp(Description, hmp->cable_path) == 0) {
+			if (global_debug)
+				fprintf(stderr, "Found cableID %d (0x%04x, 0x%04x) with path %s\n", hmp->cable_hw, hmp->usb_vid, hmp->usb_pid, hmp->cable_path);
 			break;
+		}
 	}
-	if (hmp->cable_hw == CABLE_HW_UNKNOWN)
+
+	if (hmp->cable_hw == CABLE_HW_UNKNOWN) {
+		fprintf(stderr, "CABLE_HW_UNKNOWN failed\n");
 		return (-1);
+	}
 
 	if (!quiet)
 		printf("Using USB cable: %s\n", hmp->cable_path);
@@ -800,6 +812,9 @@ setup_usb(void)
 
 	FT_Purge(ftHandle, FT_PURGE_TX);
 	FT_Purge(ftHandle, FT_PURGE_RX);
+
+	if (global_debug)
+		fprintf(stderr, "Returning from setup_usb()\n");
 
 	return (0);
 }
@@ -879,6 +894,7 @@ setup_usb(void)
 {
 	int res;
 
+
 #ifdef __APPLE__
 	uid_t uid=getuid(), euid=geteuid();
 	if (uid<0 || uid!=euid) {
@@ -901,11 +917,19 @@ setup_usb(void)
 		return (res);
 	}
 
+	if (global_debug)
+		fprintf(stderr, "Going through cable_hw_map loop\n");
+
 	for (hmp = cable_hw_map; hmp->cable_hw != CABLE_HW_UNKNOWN; hmp++) {
+		if (global_debug)
+			fprintf(stderr, "Looking cableID %d (0x%04x, 0x%04x) with path %s\n", hmp->cable_hw, hmp->usb_vid, hmp->usb_pid, hmp->cable_path);
 		res = ftdi_usb_open_desc_index(&fc, hmp->usb_vid, hmp->usb_pid,
 		    hmp->cable_path, serial, port_index);
-		if (res == 0)
+		if (res == 0) {
+			if (global_debug)
+				fprintf(stderr, "Found cableID %d (0x%04x, 0x%04x) with path %s\n", hmp->cable_hw, hmp->usb_vid, hmp->usb_pid, hmp->cable_path);
 			break;
+		}
 	}
 	if (res < 0) {
 		res = ftdi_usb_open_desc_index(&fc, 0x0403, 0x6001,
@@ -948,6 +972,8 @@ setup_usb(void)
 		fprintf(stderr, "ftdi_set_bitmode() failed\n");
 		return (EXIT_FAILURE);
 	}
+	if (global_debug)
+		fprintf(stderr, "Returning from setup_usb()\n");
 
 	return (0);
 }
