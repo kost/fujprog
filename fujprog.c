@@ -527,7 +527,8 @@ static const char *serial = NULL; /* FTDI serial to support more than one device
 static int input_type = TYPE_UNSPECIFIED; /* specify type of input */
 static int terminal;		/* terminal emulation mode */
 static int reload;		/* send break to reset f32c */
-static int quiet;		/* suppress standard messages */
+static int quiet = 0;          /* suppress standard messages */
+static int progress_dots = 0; /* show progress dots */
 char *svf_name;			/* SVF output name */
 static int txfu_ms;		/* txt file upload character delay (ms) */
 static int tx_binary;		/* send in raw (0) or binary (1) format */
@@ -619,28 +620,37 @@ set_port_mode(int mode)
 
 	/* Run only if not in identify mode */
 	if (!opt_info) {
-	/* Blink status LED by deactivating CBUS pulldown pin */
-	if (need_led_blink) {
-		need_led_blink = 0;
-		led_state ^= USB_CBUS_LED;
-		if (!quiet && progress_perc < 100) {
-			if (!display_log) {
-				fprintf(stderr, "\r");
-				fprintf(stderr, "Programming: %d%% %c ",
-				progress_perc, statc[blinker_phase]);
-				fflush(stderr);
-			} else {
-				display_counter++;
-				if (display_counter >= display_log) {
-					display_counter=0;
-					fprintf(stderr, "Programming: %d%%\n",
-					progress_perc);
+		/* Blink status LED by deactivating CBUS pulldown pin */
+		if (need_led_blink) {
+			need_led_blink = 0;
+			led_state ^= USB_CBUS_LED;
+			if (progress_perc < 100) {
+				if (progress_dots) {
+					fprintf(stderr, ".");
 					fflush(stderr);
 				}
+				else {
+					if (!quiet) {
+						if (!display_log) {
+							fprintf(stderr, "\r");
+							fprintf(stderr, "Programming: %d%% %c ",
+								progress_perc, statc[blinker_phase]);
+							fflush(stderr);
+						}
+						else {
+							display_counter++;
+							if (display_counter >= display_log) {
+								display_counter = 0;
+								fprintf(stderr, "Programming: %d%%\n",
+									progress_perc);
+								fflush(stderr);
+							}
+						}
+					}
+				}
 			}
+			blinker_phase = (blinker_phase + 1) & 0x3;
 		}
-		blinker_phase = (blinker_phase + 1) & 0x3;
-	}
 	}
 
 #ifdef WIN32
@@ -768,7 +778,7 @@ setup_usb(void)
 		return (-1);
 	}
 
-	if (!quiet)
+	if (!quiet || progress_dots)
 		printf("Using USB cable: %s\n", hmp->cable_path);
 
 	res = FT_SetBaudRate(ftHandle, USB_BAUDS);
@@ -3030,7 +3040,8 @@ usage(void)
 	printf("  -h 		This help message\n");
 	printf("  -l X 		Display messages in log fashion every <X> times\n");
 	printf("  -S serial 	Select FTDI by serial to support multiple boards\n");
-	printf("  -q 		Suppress messages\n");
+	printf("  -q 		Suppress messages, but show progress with dots\n");
+	printf("  -Q 		Suppress messages, no progress dots\n");
 
 	if (terminal) {
 		printf("\n Terminal emulation mode commands:\n");
@@ -3165,7 +3176,7 @@ prog(char *fname, int target, int debug)
 
 	tend = ms_uptime();
 	if (res == 0) {
-		if (!quiet) {
+		if (!quiet || progress_dots) {
 			if (!display_log)
 				fprintf(stderr, "\r");
 			fprintf(stderr, "Programming: 100%%  ");
@@ -4448,9 +4459,9 @@ main(int argc, char *argv[])
 	force_prog=0;
 
 #ifndef USE_PPI
-#define OPTS	"Vqtdzhij:l:T:b:p:x:p:P:a:e:f:D:rs:S:"
+#define OPTS	"VqQtdzhij:l:T:b:p:x:p:P:a:e:f:D:rs:S:"
 #else
-#define OPTS	"Vqtdzhij:l:T:b:p:x:p:P:a:e:f:D:rs:S:c:"
+#define OPTS	"VqQtdzhij:l:T:b:p:x:p:P:a:e:f:D:rs:S:c:"
 #endif
 	while ((c = getopt(argc, argv, OPTS)) != -1) {
 		switch (c) {
@@ -4548,6 +4559,11 @@ main(int argc, char *argv[])
 			break;
 		case 'q':
 			quiet = 1;
+			progress_dots = 1;
+			break;
+		case 'Q':
+			quiet = 1;
+			progress_dots = 0;
 			break;
 		case 'r':
 			reload = 1;
