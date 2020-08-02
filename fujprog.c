@@ -628,8 +628,9 @@ set_port_mode(int mode)
 			led_state ^= USB_CBUS_LED;
 			if (progress_perc < 100) {
 				if (progress_dots) {
+					// printing progress dots ....
 					fprintf(stderr, ".");
-					if ((progress_perc >= (progress_dot_val * progress_dot_inc))) {
+					if ( progress_perc >= (progress_dot_val * progress_dot_inc) ) {
 						fprintf(stderr, " %d%% Complete.\n",
 							progress_perc);
 						progress_dot_val++;
@@ -639,12 +640,14 @@ set_port_mode(int mode)
 				else {
 					if (!quiet) {
 						if (!display_log) {
+							// this is the default screen output with / \ - animation chars on one line
 							fprintf(stderr, "\r");
 							fprintf(stderr, "Programming: %d%% %c ",
 								progress_perc, statc[blinker_phase]);
 							fflush(stderr);
 						}
 						else {
+							// this will print a new log line for each loop here (can be somewhat verbose)
 							display_counter++;
 							if (display_counter >= display_log) {
 								display_counter = 0;
@@ -3188,13 +3191,22 @@ prog(char *fname, int target, int debug)
 		if (!quiet || progress_dots) {
 			if (!display_log)
 				fprintf(stderr, "\r");
+
+			// if we are showing progress dots, we don't want the "Programming" text to stomp on top of them
+			if (progress_dots) {
+				fprintf(stderr, "\n");
+			}
+
 			fprintf(stderr, "Programming: 100%%  ");
 			fprintf(stderr, "\nCompleted in %.2f seconds.\n",
 			    (tend - tstart) / 1000.0);
+			fflush(stderr);
 		}
-	} else
+	}
+	else {
 		fprintf(stderr, "\nFailed.\n");
-
+		fflush(stderr);
+	}
 	return (res);
 }
 
