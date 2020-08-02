@@ -529,6 +529,8 @@ static int terminal;		/* terminal emulation mode */
 static int reload;		/* send break to reset f32c */
 static int quiet = 0;          /* suppress standard messages */
 static int progress_dots = 0; /* show progress dots */
+static int progress_dot_val = 1;  /* used to keep track of current percentage summary progress, see progress_dot_inc; percent complete = (progress_dot_val * progress_dot_inc)  */
+static int progress_dot_inc = 10; /* show progress dot percentage summary in these increments (e.g. a value of 10 to show at 10%, 20%, etc) */
 char *svf_name;			/* SVF output name */
 static int txfu_ms;		/* txt file upload character delay (ms) */
 static int tx_binary;		/* send in raw (0) or binary (1) format */
@@ -627,6 +629,11 @@ set_port_mode(int mode)
 			if (progress_perc < 100) {
 				if (progress_dots) {
 					fprintf(stderr, ".");
+					if ((progress_perc >= (progress_dot_val * progress_dot_inc))) {
+						fprintf(stderr, " %d%% Complete.\n",
+							progress_perc);
+						progress_dot_val++;
+					}
 					fflush(stderr);
 				}
 				else {
@@ -3041,6 +3048,8 @@ usage(void)
 	printf("  -l X 		Display messages in log fashion every <X> times\n");
 	printf("  -S serial 	Select FTDI by serial to support multiple boards\n");
 	printf("  -q 		Suppress messages, but show progress with dots\n");
+	printf("  -q[n] 	Suppress messages, but show progress with dots\n");
+	printf("    		and completion update every [n] percent (no space after q).\n");
 	printf("  -Q 		Suppress messages, no progress dots\n");
 
 	if (terminal) {
@@ -4459,9 +4468,9 @@ main(int argc, char *argv[])
 	force_prog=0;
 
 #ifndef USE_PPI
-#define OPTS	"VqQtdzhij:l:T:b:p:x:p:P:a:e:f:D:rs:S:"
+#define OPTS	"VQtdzhij:l:T:b:p:x:p:P:a:e:f:D:rs:S:q::?"
 #else
-#define OPTS	"VqQtdzhij:l:T:b:p:x:p:P:a:e:f:D:rs:S:c:"
+#define OPTS	"VQtdzhij:l:T:b:p:x:p:P:a:e:f:D:rs:S:c:q::?"
 #endif
 	while ((c = getopt(argc, argv, OPTS)) != -1) {
 		switch (c) {
@@ -4558,6 +4567,15 @@ main(int argc, char *argv[])
 			serial = optarg;
 			break;
 		case 'q':
+			if (optarg != NULL) {
+				progress_dot_inc = atoi(optarg); // when the [q] parameter [n] is an integer, show "Completed Pecentage" every [n] percent*.
+				if (progress_dot_inc == 0) {
+					progress_dot_inc = 100; // we'll assume zero, or non-numbers, won't show increments
+				}
+			}
+			else {
+				progress_dot_inc = 100; // no interim completion increments markers
+			}
 			quiet = 1;
 			progress_dots = 1;
 			break;
