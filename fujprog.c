@@ -4180,6 +4180,10 @@ term_emul(void)
 					reload = 1;
 					res = 0;
 					goto done;
+				case 'a':
+					txbuf[tx_cnt] = c = 1;
+					break;
+				case 'k':
 				case '.':
 					res = 1;
 					goto done;
@@ -4239,6 +4243,14 @@ term_emul(void)
 					break;
 				}
 			}
+			if (c == 1) {
+				if (key_phase < 2) {
+					key_phase = 2;
+					continue;
+				} else {
+					key_phase = 0;
+				}
+			}
 			if (key_phase == 1 && c == '~') {
 				key_phase = 2;
 				continue;
@@ -4256,7 +4268,11 @@ term_emul(void)
 #ifdef WIN32
 				FT_Write(ftHandle, txbuf, tx_cnt, &sent);
 #else
-				sent = ftdi_write_data(&fc, txbuf, tx_cnt);
+				sent = 0;
+				for(int i=0; i<tx_cnt; i++) {
+					sent += ftdi_write_data(&fc, txbuf+i, 1);
+					ms_sleep(txfu_ms);
+				}
 #endif
 			} else {/* cable_hw == CABLE_HW_COM */
 #ifdef WIN32
@@ -4264,7 +4280,11 @@ term_emul(void)
 				    (DWORD *) &sent, NULL);
 #else
 				fcntl(com_port, F_SETFL, 0);
-				sent = write(com_port, txbuf, tx_cnt);
+				sent = 0;
+				for(int i=0; i<tx_cnt; i++) {
+					sent += write(com_port, txbuf+i, 1);
+					ms_sleep(txfu_ms);
+				}
 				fcntl(com_port, F_SETFL, O_NONBLOCK);
 #endif
 			}
