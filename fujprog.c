@@ -4466,6 +4466,7 @@ main(int argc, char *argv[])
 	COMMTIMEOUTS com_to;
 #endif
 	force_prog=0;
+	serial = NULL;
 
 #ifndef USE_PPI
 #define OPTS	"Vqtdzhij:l:T:b:p:x:p:P:a:e:f:D:rs:S:"
