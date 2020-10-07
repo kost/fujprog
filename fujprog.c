@@ -897,7 +897,10 @@ setup_usb(void)
 
 #ifdef __APPLE__
 	uid_t uid=getuid(), euid=geteuid();
-	if (uid<0 || uid!=euid) {
+	if (uid<=0 || uid!=euid) {
+		if (!quiet) {
+			fprintf(stderr, "elevated/root permissions detected, handling kexts\n");
+		}
 		setuid(0);
 		system("/sbin/kextunload"
 		    " -bundle-id com.FTDI.driver.FTDIUSBSerialDriver");
