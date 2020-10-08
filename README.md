@@ -235,6 +235,25 @@ easily with some udev rule:
 
 ## APPLE
 
+Make sure that FTDI driver is not loaded. For example:
+
+```
+sudo kextstat | grep -i ftdi
+```
+
+Should not return com.FTDI.driver.FTDIUSBSerialDriver when ulx3s is connected to USB port like this:
+
+```
+195 0 0xffffff7f85521000 0x7000 0x7000 com.FTDI.driver.FTDIUSBSerialDriver (2.4.4)
+```
+
+If does, try to run fujprog as root as it will try to automatically handle kexts. Also, you can temporarily remove them by running following commands:
+
+```
+/sbin/kextunload -bundle-id com.FTDI.driver.FTDIUSBSerialDriver
+/sbin/kextunload -bundle-id com.apple.driver.AppleUSBFTDI
+```
+
 Feel free to report any problems. If you have problems running released binary try to compile your own version.
 
 # Credits
