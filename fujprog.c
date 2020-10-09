@@ -2796,7 +2796,7 @@ exec_bit_file(char *path, int jed_target, int debug)
  * and then call exec_svf_mem().
  */
 static int
-exec_svf_file(char *path, int debug)
+exec_svf_file(char *path, int target, int debug)
 {
 	char *linebuf, *fbuf;
 	FILE *fd;
@@ -2804,6 +2804,11 @@ exec_svf_file(char *path, int debug)
 	int lines_tot = 1;
 	int res;
 	size_t i, slen;
+
+	if (target != JED_TGT_SRAM) {
+		fprintf(stderr, "Unsupported target: svf files can only be written to SRAM (for now)\n");
+		return (EXIT_FAILURE);
+	}
 
 	if (path == NULL) {
 		fbuf=read_stdin(&slen);
@@ -3127,7 +3132,7 @@ prog(char *fname, int target, int debug)
 		    (strcasecmp(&fname[c], ".img") == 0 && target == JED_TGT_FLASH))
 			res = exec_bit_file(fname, target, debug);
 		else if (strcasecmp(&fname[c], ".svf") == 0)
-			res = exec_svf_file(fname, debug);
+			res = exec_svf_file(fname, target, debug);
 		else {
 			/* Execute flash target automatically */
 			if (!quiet) {
@@ -3147,7 +3152,7 @@ prog(char *fname, int target, int debug)
 				res = exec_bit_file(fname, target, debug);
 				break;
 			case TYPE_SVF:
-				res = exec_svf_file(fname, debug);
+				res = exec_svf_file(fname, target, debug);
 				break;
 			case TYPE_UNSPECIFIED:
 				if (fname == NULL) {
