@@ -4630,7 +4630,7 @@ main(int argc, char *argv[])
 
 	if (com_name && cable_hw != CABLE_HW_COM) {
 		fprintf(stderr, "error: "
-		    "options -P and -c are mutualy exclusive\n");
+		    "options -P and -c are mutually exclusive\n");
 		exit(EXIT_FAILURE);
 	}
 
