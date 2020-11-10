@@ -2661,6 +2661,10 @@ exec_bit_file(char *path, int jed_target, int debug)
 		buf_sprintf(op, "SDR	16	TDI(68FE);\n");
 		buf_sprintf(op, "RUNTEST IDLE	32 TCK;\n\n");
 
+		/* Software reset RSTEN 66h RST 99h (both invariant under bit-reverse) */
+		buf_sprintf(op, "SDR	8	tdi(66);\n");
+		buf_sprintf(op, "SDR	8	tdi(99);\n");
+
 		/* Erase sectors */
 		printf("Erasing sectors, please wait.\n");
 		for (i = 0; i < flen; i += SPI_SECTOR_SIZE) {
