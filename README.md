@@ -121,8 +121,21 @@ wget https://www.ftdichip.com/Drivers/CDM/CDM%20v2.12.28%20WHQL%20Certified.zip
 
 Cross compiling is done using standard cmake toolchain file:
 ```
-mkdir build
+mkdir -p build
 cd build
+cmake -DCMAKE_TOOLCHAIN_FILE=`pwd`/../cmake/Toolchain-cross-mingw32.cmake ..
+make
+```
+
+If you've already built `fujprog` for Linux, say in WSL... you may need to delete the CMake cache:
+```
+mkdir -p build
+cd build
+
+rm -r CMakefiles
+rm CMakeCache.txt
+rm cmake_install.cmake
+
 cmake -DCMAKE_TOOLCHAIN_FILE=`pwd`/../cmake/Toolchain-cross-mingw32.cmake ..
 make
 ```
