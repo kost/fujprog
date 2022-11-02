@@ -456,6 +456,17 @@ static struct cable_hw_map {
 	{
 		.cable_hw = 	CABLE_HW_USB,
 		.usb_vid = 	0x0403,
+		.usb_pid =	0x6010,
+		.cable_path =	"Lattice ECP5 Evaluation Board A",
+		.tck =		0x01,
+		.tms =		0x08,
+		.tdi =		0x02,
+		.tdo =		0x04,
+		.cbus_led =	0x10
+	},
+	{
+		.cable_hw = 	CABLE_HW_USB,
+		.usb_vid = 	0x0403,
 		.usb_pid =	0x6011,
 		.cable_path =	"Digilent FFC",
 		.tck =		0x01,
@@ -749,8 +760,11 @@ setup_usb(void)
 		return (res);
 	}
 
-	if (global_debug)
+	if (global_debug) {
+		fprintf(stderr, "Found FTDI device VID 0x%04X PID 0x%04X with description \"%.64s\"\n",
+		    (deviceID >> 16), (deviceID & 0xFFFF), Description);
 		fprintf(stderr, "Going through cable_hw_map loop\n");
+	}
 
 	for (hmp = cable_hw_map; hmp->cable_hw != CABLE_HW_UNKNOWN; hmp++) {
 		if (global_debug)
