@@ -749,8 +749,11 @@ setup_usb(void)
 		return (res);
 	}
 
-	if (global_debug)
+	if (global_debug) {
+		fprintf(stderr, "Found FTDI device VID 0x%04X PID 0x%04X with description \"%.64s\"\n",
+		    (deviceID >> 16), (deviceID & 0xFFFF), Description);
 		fprintf(stderr, "Going through cable_hw_map loop\n");
+	}
 
 	for (hmp = cable_hw_map; hmp->cable_hw != CABLE_HW_UNKNOWN; hmp++) {
 		if (global_debug)
