@@ -456,6 +456,17 @@ static struct cable_hw_map {
 	{
 		.cable_hw = 	CABLE_HW_USB,
 		.usb_vid = 	0x0403,
+		.usb_pid =	0x6010,
+		.cable_path =	"Lattice ECP5 Evaluation Board A",
+		.tck =		0x01,
+		.tms =		0x08,
+		.tdi =		0x02,
+		.tdo =		0x04,
+		.cbus_led =	0x10
+	},
+	{
+		.cable_hw = 	CABLE_HW_USB,
+		.usb_vid = 	0x0403,
 		.usb_pid =	0x6011,
 		.cable_path =	"Digilent FFC",
 		.tck =		0x01,
